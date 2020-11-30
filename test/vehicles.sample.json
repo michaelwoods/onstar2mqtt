@@ -1,0 +1,237 @@
+{
+  "vehicles": {
+    "size": "1",
+    "vehicle": [
+      {
+        "vin": "foobarVIN",
+        "make": "Chevrolet",
+        "model": "Bolt EV",
+        "year": "2020",
+        "manufacturer": "General Motors",
+        "bodyStyle": "CAR",
+        "phone": "+5558675309",
+        "unitType": "EMBEDDED",
+        "onstarStatus": "ACTIVE",
+        "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN",
+        "isInPreActivation": "false",
+        "commands": {
+          "command": [
+            {
+              "name": "cancelAlert",
+              "description": "Cancel a vehicle alert (honk horns/flash lights).",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/cancelAlert",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "getHotspotInfo",
+              "description": "Retrives the WiFi Hotspot info",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/hotspot/commands/getInfo",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "lockDoor",
+              "description": "Locks the doors.",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/lockDoor",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "unlockDoor",
+              "description": "Unlocks the doors.",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/unlockDoor",
+              "isPrivSessionRequired": "true"
+            },
+            {
+              "name": "alert",
+              "description": "Triggers a vehicle alert (honk horns/flash lights).",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/alert",
+              "isPrivSessionRequired": "true"
+            },
+            {
+              "name": "start",
+              "description": "Remotely starts the vehicle.",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/start",
+              "isPrivSessionRequired": "true"
+            },
+            {
+              "name": "cancelStart",
+              "description": "Cancels previous remote start command.",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/cancelStart",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "diagnostics",
+              "description": "Retrieves diagnostic vehicle data.",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/diagnostics",
+              "isPrivSessionRequired": "false",
+              "commandData": {
+                "supportedDiagnostics": {
+                  "supportedDiagnostic": [
+                    "LAST TRIP FUEL ECONOMY",
+                    "ENERGY EFFICIENCY",
+                    "HYBRID BATTERY MINIMUM TEMPERATURE",
+                    "EV ESTIMATED CHARGE END",
+                    "LIFETIME ENERGY USED",
+                    "EV BATTERY LEVEL",
+                    "EV PLUG VOLTAGE",
+                    "HOTSPOT CONFIG",
+                    "ODOMETER",
+                    "HOTSPOT STATUS",
+                    "CHARGER POWER LEVEL",
+                    "LIFETIME EV ODOMETER",
+                    "EV PLUG STATE",
+                    "EV CHARGE STATE",
+                    "TIRE PRESSURE",
+                    "AMBIENT AIR TEMPERATURE",
+                    "LAST TRIP DISTANCE",
+                    "INTERM VOLT BATT VOLT",
+                    "GET COMMUTE SCHEDULE",
+                    "GET CHARGE MODE",
+                    "EV SCHEDULED CHARGE START",
+                    "VEHICLE RANGE"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "location",
+              "description": "Retrieves the vehicle's current location.",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/location",
+              "isPrivSessionRequired": "true"
+            },
+            {
+              "name": "chargeOverride",
+              "description": "Sends Charge Override",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/chargeOverride",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "getChargingProfile",
+              "description": "Gets the Charge Mode",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/getChargingProfile",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "getCommuteSchedule",
+              "description": "Gets the commuting schedule",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/getCommuteSchedule",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "connect",
+              "description": "Initiates a connection to the vehicle",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/connect",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "setChargingProfile",
+              "description": "Sets the charging profile",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/setChargingProfile",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "setCommuteSchedule",
+              "description": "Sets the commuting schedule",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/setCommuteSchedule",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "stopFastCharge",
+              "description": "Stops the charge",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/stopFastCharge",
+              "isPrivSessionRequired": "true"
+            },
+            {
+              "name": "createTripPlan",
+              "description": "Create Trip Plan",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/createTripPlan",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "getTripPlan",
+              "description": "Provides the ability to retrieve an existing trip plan for an electric vehicle",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/getTripPlan",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "getHotspotStatus",
+              "description": "Retrive WiFi status",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/hotspot/commands/getStatus",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "setHotspotInfo",
+              "description": "update the WiFi SSID and passPhrase",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/hotspot/commands/setInfo",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "disableHotspot",
+              "description": "Disable WiFi Hotspot",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/hotspot/commands/disable",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "enableHotspot",
+              "description": "Enable WiFi Hotspot",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/hotspot/commands/enable",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "getRateSchedule",
+              "description": "Get EV Rate Schedule",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/getRateSchedule",
+              "isPrivSessionRequired": "true"
+            },
+            {
+              "name": "setRateSchedule",
+              "description": "Set EV Rate Schedule.",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/setRateSchedule",
+              "isPrivSessionRequired": "true"
+            },
+            {
+              "name": "getChargerPowerLevel",
+              "description": " Get the charger level",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/getChargerPowerLevel",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "setChargerPowerLevel",
+              "description": " Set the charger level",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/setChargerPowerLevel",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "setPriorityCharging",
+              "description": "Set priority charging",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/setPriorityCharging",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "getPriorityCharging",
+              "description": "Get priority charging",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/getPriorityCharging",
+              "isPrivSessionRequired": "false"
+            },
+            {
+              "name": "stopCharge",
+              "description": "Sets the Stop Charge",
+              "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/commands/stopCharge",
+              "isPrivSessionRequired": "true"
+            }
+          ]
+        },
+        "modules": {
+          "module": [
+            {
+              "moduleType": "BYOM2",
+              "moduleCapability": "SF3"
+            }
+          ]
+        },
+        "propulsionType": "BEV",
+        "isSharedVehicle": "false",
+        "ownerAccount": "999999999"
+      }
+    ]
+  }
+}

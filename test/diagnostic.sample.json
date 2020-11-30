@@ -1,0 +1,275 @@
+{
+  "commandResponse": {
+    "requestTime": "2020-11-30T12:00:00.000Z",
+    "completionTime": "2020-11-30T00:00:00.000Z",
+    "url": "https://api.gm.com/api/v1/account/vehicles/foobarVIN/requests/fizzbuzzREQ",
+    "status": "success",
+    "type": "diagnostics",
+    "body": {
+      "diagnosticResponse": [
+        {
+          "name": "AMBIENT AIR TEMPERATURE",
+          "diagnosticElement": [
+            {
+              "name": "AMBIENT AIR TEMPERATURE",
+              "status": "NA",
+              "message": "na",
+              "value": "15",
+              "unit": "Cel"
+            }
+          ]
+        },
+        {
+          "name": "CHARGER POWER LEVEL",
+          "diagnosticElement": [
+            {
+              "name": "CHARGER POWER LEVEL",
+              "status": "NA",
+              "message": "na",
+              "value": "NO_REDUCTION",
+              "unit": "N/A"
+            }
+          ]
+        },
+        {
+          "name": "ENERGY EFFICIENCY",
+          "diagnosticElement": [
+            {
+              "name": "CO2 AVOIDED",
+              "status": "NA",
+              "message": "na"
+            },
+            {
+              "name": "ELECTRIC ECONOMY",
+              "status": "NA",
+              "message": "na",
+              "value": "21.85",
+              "unit": "kwh"
+            },
+            {
+              "name": "FUEL AVOIDED",
+              "status": "NA",
+              "message": "na"
+            },
+            {
+              "name": "GAS MILES",
+              "status": "NA",
+              "message": "na"
+            },
+            {
+              "name": "LIFETIME EFFICIENCY",
+              "status": "NA",
+              "message": "na",
+              "value": "21.85",
+              "unit": "kwh"
+            },
+            {
+              "name": "LIFETIME EV ODO",
+              "status": "NA",
+              "message": "na"
+            },
+            {
+              "name": "LIFETIME FUEL ECON",
+              "status": "NA",
+              "message": "na"
+            },
+            {
+              "name": "LIFETIME MPGE",
+              "status": "NA",
+              "message": "na",
+              "value": "40.73",
+              "unit": "kmple"
+            },
+            {
+              "name": "ODOMETER",
+              "status": "NA",
+              "message": "na",
+              "value": "6013.8",
+              "unit": "KM"
+            }
+          ]
+        },
+        {
+          "name": "EV CHARGE STATE",
+          "diagnosticElement": [
+            {
+              "name": "EV CHARGE STATE",
+              "status": "NA",
+              "message": "charging_complete",
+              "value": "charging_complete",
+              "unit": "N/A"
+            },
+            {
+              "name": "PRIORITY CHARGE INDICATOR",
+              "status": "NA",
+              "message": "na",
+              "value": "FALSE",
+              "unit": "N/A"
+            },
+            {
+              "name": "PRIORITY CHARGE STATUS",
+              "status": "NA",
+              "message": "na",
+              "value": "NOT_ACTIVE",
+              "unit": "N/A"
+            },
+            {
+              "name": "PRIORITY_CHARGE_STATUS",
+              "status": "NA",
+              "message": "na"
+            }
+          ]
+        },
+        {
+          "name": "EV PLUG STATE",
+          "diagnosticElement": [
+            {
+              "name": "EV PLUG STATE",
+              "status": "NA",
+              "message": "plugged",
+              "value": "plugged",
+              "unit": "Stat"
+            }
+          ]
+        },
+        {
+          "name": "EV SCHEDULED CHARGE START",
+          "diagnosticElement": [
+            {
+              "name": "EV SCHEDULED CHARGE START 120V DAY",
+              "status": "NA",
+              "message": "na",
+              "value": "Monday"
+            },
+            {
+              "name": "EV SCHEDULED CHARGE START 240V DAY",
+              "status": "NA",
+              "message": "na",
+              "value": "Monday"
+            },
+            {
+              "name": "SCHED CHG START 120V",
+              "status": "NA",
+              "message": "na",
+              "value": "11:30"
+            },
+            {
+              "name": "SCHED CHG START 240V",
+              "status": "NA",
+              "message": "na",
+              "value": "11:30"
+            }
+          ]
+        },
+        {
+          "name": "GET CHARGE MODE",
+          "diagnosticElement": [
+            {
+              "name": "CHARGE MODE",
+              "status": "NA",
+              "message": "na",
+              "value": "DEPARTURE_BASED"
+            },
+            {
+              "name": "RATE TYPE",
+              "status": "NA",
+              "message": "na",
+              "value": "PEAK"
+            }
+          ]
+        },
+        {
+          "name": "ODOMETER",
+          "diagnosticElement": [
+            {
+              "name": "ODOMETER",
+              "status": "NA",
+              "message": "na",
+              "value": "6013.8",
+              "unit": "KM"
+            }
+          ]
+        },
+        {
+          "name": "TIRE PRESSURE",
+          "diagnosticElement": [
+            {
+              "name": "TIRE PRESSURE LF",
+              "status": "NA",
+              "message": "YELLOW",
+              "value": "240.0",
+              "unit": "KPa"
+            },
+            {
+              "name": "TIRE PRESSURE LR",
+              "status": "NA",
+              "message": "YELLOW",
+              "value": "236.0",
+              "unit": "KPa"
+            },
+            {
+              "name": "TIRE PRESSURE PLACARD FRONT",
+              "status": "NA",
+              "message": "na",
+              "value": "262.0",
+              "unit": "KPa"
+            },
+            {
+              "name": "TIRE PRESSURE PLACARD REAR",
+              "status": "NA",
+              "message": "na",
+              "value": "262.0",
+              "unit": "KPa"
+            },
+            {
+              "name": "TIRE PRESSURE RF",
+              "status": "NA",
+              "message": "YELLOW",
+              "value": "236.0",
+              "unit": "KPa"
+            },
+            {
+              "name": "TIRE PRESSURE RR",
+              "status": "NA",
+              "message": "YELLOW",
+              "value": "228.0",
+              "unit": "KPa"
+            }
+          ]
+        },
+        {
+          "name": "VEHICLE RANGE",
+          "diagnosticElement": [
+            {
+              "name": "EV MAX RANGE",
+              "status": "NA",
+              "message": "na"
+            },
+            {
+              "name": "EV MIN RANGE",
+              "status": "NA",
+              "message": "na"
+            },
+            {
+              "name": "EV RANGE",
+              "status": "NA",
+              "message": "na",
+              "value": "341.0",
+              "unit": "KM"
+            },
+            {
+              "name": "GAS RANGE",
+              "status": "NA",
+              "message": "na"
+            },
+            {
+              "name": "TOTAL RANGE",
+              "status": "NA",
+              "message": "na"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

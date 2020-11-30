@@ -1,0 +1,36 @@
+{
+  "name": "onstar2mqtt",
+  "version": "1.0.0",
+  "description": "OnStarJS wrapper for MQTT",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michaelwoods/onstar2mqtt.git"
+  },
+  "keywords": [
+    "onstar",
+    "mqtt",
+    "gm",
+    "chevrolet"
+  ],
+  "author": "Michael Woods",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/michaelwoods/onstar2mqtt/issues"
+  },
+  "homepage": "https://github.com/michaelwoods/onstar2mqtt#readme",
+  "dependencies": {
+    "async-mqtt": "^2.6.1",
+    "convert-units": "^2.3.4",
+    "lodash": "^4.17.20",
+    "onstarjs": "^2.0.10",
+    "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "mocha": "^8.2.1"
+  }
+}
