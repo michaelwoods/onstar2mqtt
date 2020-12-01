@@ -2,6 +2,9 @@ const _ = require('lodash');
 
 const Measurement = require('./measurement');
 
+/**
+ *
+ */
 class Diagnostic {
     constructor(diagResponse) {
         this.name = diagResponse.name;
@@ -12,11 +15,8 @@ class Diagnostic {
         this.diagnosticElements = _.map(validEle, e => new DiagnosticElement(e));
     }
 
-    elementsToString(diag) {
-        const validEle = _.filter(diag, d => _.has(d, 'value') && _.has(d, 'unit'));
-        let output = '';
-        _.forEach(validEle, e => output += `  ${e.name} ${e.value}${e.unit}\n`);
-        return output;
+    hasElements() {
+        return this.diagnosticElements.length >= 1;
     }
 
     toString() {
@@ -28,8 +28,20 @@ class Diagnostic {
 
 class DiagnosticElement {
     constructor(ele) {
-        this.name = ele.name;
+        this._name = ele.name;
         this.measurement = new Measurement(ele.value, ele.unit);
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get value() {
+        return this.measurement.value;
+    }
+
+    get unit() {
+        return this.measurement.unit;
     }
 
     toString() {
