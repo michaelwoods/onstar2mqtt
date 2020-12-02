@@ -13,11 +13,16 @@ class Measurement {
      */
     static correctUnitName(unit) {
         switch (unit) {
-            case 'Cel': return '°C';
-            case 'kwh': return 'kWh';
-            case 'KM': return 'km';
-            case 'KPa': return 'kPa';
-            case 'kmple': return 'km/l(e)'; // TODO check on this
+            case 'Cel':
+                return '°C';
+            case 'kwh':
+                return 'kWh';
+            case 'KM':
+                return 'km';
+            case 'KPa':
+                return 'kPa';
+            case 'kmple':
+                return 'km/l(e)'; // TODO check on this
             case 'volts':
             case 'Volts':
                 return 'V';
@@ -26,7 +31,8 @@ class Measurement {
             case 'N/A':
                 return undefined;
 
-            default: return unit;
+            default:
+                return unit;
         }
     }
 

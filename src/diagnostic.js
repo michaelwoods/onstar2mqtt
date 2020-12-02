@@ -2,9 +2,6 @@ const _ = require('lodash');
 
 const Measurement = require('./measurement');
 
-/**
- *
- */
 class Diagnostic {
     constructor(diagResponse) {
         this.name = diagResponse.name;
@@ -49,4 +46,4 @@ class DiagnosticElement {
     }
 }
 
-module.exports = { Diagnostic, DiagnosticElement };
+module.exports = {Diagnostic, DiagnosticElement};

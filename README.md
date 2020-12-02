@@ -4,3 +4,7 @@ A service that utilizes the [OnStarJS](https://github.com/samrum/OnStarJS) libra
 There is no official relationship with GM, Chevrolet nor OnStar. In fact, it would be nice if they'd even respond to development requests, so we wouldn't have to reverse engineer their API.
 ### Home Assistant configuration templates
 Auto discovery is enabled, for further integrations see [HA-MQTT.md](HA-MQTT.md).
+
+### TODO
+1. Add travis docker build w/ push to docker hub
+1. Logging library

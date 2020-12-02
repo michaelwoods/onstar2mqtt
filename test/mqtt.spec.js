@@ -35,17 +35,17 @@ describe('MQTT', () => {
                 assert.strictEqual(mqtt.getConfigTopic(d), 'homeassistant/sensor/XXX/ambient_air_temperature/config');
             });
             it('should generate state topics', () => {
-                assert.strictEqual(mqtt.getStateTopic(d), 'homeassistant/sensor/XXX/ambient_air_temperature/state');
+                assert.strictEqual(mqtt.getStateTopic(d, d.diagnosticElements[0]), 'homeassistant/sensor/XXX/ambient_air_temperature/state');
             });
         });
 
         describe('binary_sensor', () => {
             beforeEach(() => d = new Diagnostic(_.get(apiResponse, 'commandResponse.body.diagnosticResponse[3]')));
             it('should generate config topics', () => {
-                assert.strictEqual(mqtt.getConfigTopic(d), 'homeassistant/sensor/XXX/ev_charge_state/config');
+                assert.strictEqual(mqtt.getConfigTopic(d), 'homeassistant/binary_sensor/XXX/ev_charge_state/config');
             });
             it('should generate state topics', () => {
-                assert.strictEqual(mqtt.getStateTopic(d.diagnosticElements[1]), 'homeassistant/sensor/XXX/priority_charge_indicator/state');
+                assert.strictEqual(mqtt.getStateTopic(d.diagnosticElements[1]), 'homeassistant/binary_sensor/XXX/priority_charge_indicator/state');
             });
         });
     });
@@ -61,7 +61,7 @@ describe('MQTT', () => {
                     name: 'Ambient Air Temperature',
                     state_topic: 'homeassistant/sensor/XXX/ambient_air_temperature/state',
                     unit_of_measurement: '°C',
-                    value_template: '{{ value_json.ambient_air_temperature }'
+                    value_template: '{{ value_json.ambient_air_temperature }}'
                 });
             });
             it('should generate state payloads', () => {
@@ -80,7 +80,7 @@ describe('MQTT', () => {
                   name: 'Priority Charge Indicator',
                   state_topic: 'homeassistant/binary_sensor/XXX/ev_charge_state/state',
                   unit_of_measurement: undefined,
-                  value_template: '{{ value_json.priority_charge_indicator }'
+                  value_template: '{{ value_json.priority_charge_indicator }}'
                 });
             });
             it('should generate state payloads', () => {
