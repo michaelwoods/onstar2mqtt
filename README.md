@@ -6,5 +6,4 @@ There is no official relationship with GM, Chevrolet nor OnStar. In fact, it wou
 Auto discovery is enabled, for further integrations see [HA-MQTT.md](HA-MQTT.md).
 
 ### TODO
-1. Add travis docker build w/ push to docker hub
 1. Logging library
