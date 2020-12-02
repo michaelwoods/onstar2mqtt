@@ -2,9 +2,9 @@ name: ci
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ main ]
   pull_request:
-    branches: [ $default-branch ]
+    branches: [ main ]
   
 jobs:
   test_build_push:
