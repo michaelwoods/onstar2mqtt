@@ -12,7 +12,7 @@ const onstarConfig = {
     username: process.env.ONSTAR_USERNAME,
     password: process.env.ONSTAR_PASSWORD,
     onStarPin: process.env.ONSTAR_PIN,
-    checkRequestStatus: process.env.ONSTAR_SYNC === "true",
+    checkRequestStatus: process.env.ONSTAR_SYNC === "true" || true,
     refreshInterval: parseInt(process.env.ONSTAR_REFRESH) || (30 * 60 * 1000) // 30 min
 };
 
