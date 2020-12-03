@@ -163,13 +163,13 @@ class MQTT {
             case 'EV BATTERY LEVEL':
                 return this.mapConfigPayload(diag, diagEl, 'battery');
             case 'TIRE PRESSURE LF':
-                return this.mapConfigPayload(diag, diagEl, 'pressure', 'Tire Pressure: Left Front', "{{ {'recommendation': value_json.TIRE_PRESSURE_PLACARD_FRONT} | tojson }}");
+                return this.mapConfigPayload(diag, diagEl, 'pressure', 'Tire Pressure: Left Front', `{{ {"recommendation": value_json.${MQTT.convertName('TIRE_PRESSURE_PLACARD_FRONT')}} | tojson }}`);
             case 'TIRE PRESSURE LR':
-                return this.mapConfigPayload(diag, diagEl, 'pressure', 'Tire Pressure: Left Rear', "{{ {'recommendation': value_json.TIRE_PRESSURE_PLACARD_FRONT} | tojson }}");
+                return this.mapConfigPayload(diag, diagEl, 'pressure', 'Tire Pressure: Left Rear', `{{ {"recommendation": value_json.${MQTT.convertName('TIRE_PRESSURE_PLACARD_REAR')}} | tojson }}`);
             case 'TIRE PRESSURE RF':
-                return this.mapConfigPayload(diag, diagEl, 'pressure', 'Tire Pressure: Right Front', "{{ {'recommendation': value_json.TIRE_PRESSURE_PLACARD_REAR} | tojson }}");
+                return this.mapConfigPayload(diag, diagEl, 'pressure', 'Tire Pressure: Right Front', `{{ {"recommendation": value_json.${MQTT.convertName('TIRE_PRESSURE_PLACARD_FRONT')}} | tojson }}`);
             case 'TIRE PRESSURE RR':
-                return this.mapConfigPayload(diag, diagEl, 'pressure', 'Tire Pressure: Right Rear', "{{ {'recommendation': value_json.TIRE_PRESSURE_PLACARD_REAR} | tojson }}");
+                return this.mapConfigPayload(diag, diagEl, 'pressure', 'Tire Pressure: Right Rear', `{{ {"recommendation": value_json.${MQTT.convertName('TIRE_PRESSURE_PLACARD_REAR')}} | tojson }}`);
             // binary sensor
             case 'EV PLUG STATE': // unplugged/plugged
                 return this.mapConfigPayload(diag, diagEl, 'plug');

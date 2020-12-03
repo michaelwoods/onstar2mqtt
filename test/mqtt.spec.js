@@ -91,5 +91,19 @@ describe('MQTT', () => {
                 });
             });
         });
+
+        describe('attributes', () => {
+            beforeEach(() => d = new Diagnostic(_.get(apiResponse, 'commandResponse.body.diagnosticResponse[8]')));
+            it('should generate payloads with an attribute', () => {
+                assert.deepStrictEqual(mqtt.getConfigPayload(d, d.diagnosticElements[0]), {
+                    device_class: 'pressure',
+                    json_attributes_template: '{{ {"recommendation": value_json.tire_pressure_placard_front} | tojson }}',
+                    name: 'Tire Pressure: Left Front',
+                    state_topic: 'homeassistant/sensor/XXX/tire_pressure/state',
+                    unit_of_measurement: 'kPa',
+                    value_template: '{{ value_json.tire_pressure_lf }}'
+                });
+            });
+        });
     });
 });
