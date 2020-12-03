@@ -49,10 +49,22 @@ MQTT_PASSWORD=
 ```
 ### Node.js
 It's a typical node.js application, define the same environment values as described in the docker sections and run with:
-`npm run start`. Currently only tested with Node.js 12.x.
+`npm run start`. Currently, only tested with Node.js 12.x.
 
 ### Home Assistant configuration templates
-MQTT auto discovery is enabled, for further integrations see [HA-MQTT.md](HA-MQTT.md).
+MQTT auto discovery is enabled. For further integrations see [HA-MQTT.md](HA-MQTT.md).
+
+## Development
+### Running
+`npm run start`
+### Testing
+`npm run test`
+### Coverage
+`rpm run coverage`
+### Releases
+`npm version [major|minor|patch] -m "Version %s" && git push --follow-tags`
+
+Publish the release on GitHub to trigger a release build (ie, update 'latest' docker tag).
 
 ## TODO
 1. Logging library

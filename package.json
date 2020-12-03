@@ -4,6 +4,7 @@
   "description": "OnStarJS wrapper for MQTT",
   "main": "src/index.js",
   "scripts": {
+    "coverage": "nyc npm test",
     "start": "node src/index.js",
     "test": "mocha"
   },
