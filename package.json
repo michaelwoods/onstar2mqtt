@@ -29,7 +29,7 @@
     "convert-units": "^2.3.4",
     "lodash": "^4.17.20",
     "onstarjs": "^2.0.10",
-    "uuid": "^8.3.1"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "mocha": "^8.2.1",
