@@ -36,6 +36,6 @@ describe('Vehicle', () => {
     });
 
     it('should toString() correctly', () => {
-        assert.strictEqual(v.toString(), '2020 Chevrolet Bolt EV foobarVIN')
+        assert.strictEqual(v.toString(), '2020 Chevrolet Bolt EV')
     });
 });

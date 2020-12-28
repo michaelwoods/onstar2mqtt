@@ -41,7 +41,7 @@ let loop;
             console.log(v.toString());
         }
 
-        const mqttHA = new MQTT('homeassistant', vehicles[0].vin);
+        const mqttHA = new MQTT(vehicles[0], 'homeassistant');
         const availTopic = mqttHA.getAvailabilityTopic();
         const client = await mqtt.connectAsync(`${mqttConfig.tls
             ? 'mqtts' : 'mqtt'}://${mqttConfig.host}:${mqttConfig.port}`, {
@@ -55,34 +55,33 @@ let loop;
         const configurations = new Map();
         const run = async () => {
             const states = new Map();
-            // Note: the library is set to use only the configured VIN, but using multiple for future proofing.
-            for (const v of vehicles) {
-                console.log('Requesting diagnostics:')
-                const statsRes = await onStar.diagnostics({
-                    diagnosticItem: v.getSupported()
-                });
-                console.log(_.get(statsRes, 'status'));
-                const stats = _.map(
-                    _.get(statsRes, 'response.data.commandResponse.body.diagnosticResponse'),
-                    d => new Diagnostic(d)
-                );
+            const v = vehicles[0];
+            console.log('Requesting diagnostics:')
+            const statsRes = await onStar.diagnostics({
+                diagnosticItem: v.getSupported()
+            });
+            console.log(_.get(statsRes, 'status'));
+            const stats = _.map(
+                _.get(statsRes, 'response.data.commandResponse.body.diagnosticResponse'),
+                d => new Diagnostic(d)
+            );
 
-                for (const s of stats) {
-                    if (!s.hasElements()) {
-                        continue;
-                    }
-                    // configure once, then set or update states
-                    for (const d of s.diagnosticElements) {
-                        const topic = mqttHA.getConfigTopic(d)
-                        const payload = mqttHA.getConfigPayload(s, d);
-                        configurations.set(topic, {configured: false, payload});
-                    }
-
-                    const topic = mqttHA.getStateTopic(s);
-                    const payload = mqttHA.getStatePayload(s);
-                    states.set(topic, payload);
+            for (const s of stats) {
+                if (!s.hasElements()) {
+                    continue;
                 }
+                // configure once, then set or update states
+                for (const d of s.diagnosticElements) {
+                    const topic = mqttHA.getConfigTopic(d)
+                    const payload = mqttHA.getConfigPayload(s, d);
+                    configurations.set(topic, {configured: false, payload});
+                }
+
+                const topic = mqttHA.getStateTopic(s);
+                const payload = mqttHA.getStatePayload(s);
+                states.set(topic, payload);
             }
+            // publish configs
             for (let [topic, config] of configurations) {
                 // configure once
                 if (!config.configured) {

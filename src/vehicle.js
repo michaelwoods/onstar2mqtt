@@ -27,7 +27,7 @@ class Vehicle {
     }
 
     toString() {
-        return `${this.year} ${this.make} ${this.model} ${this.vin}`;
+        return `${this.year} ${this.make} ${this.model}`;
     }
 }
 

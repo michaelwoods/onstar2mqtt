@@ -36,9 +36,10 @@ const _ = require('lodash');
  *      }
  */
 class MQTT {
-    constructor(prefix = 'homeassistant', instance = 'XXX') {
+    constructor(vehicle, prefix = 'homeassistant') {
         this.prefix = prefix;
-        this.instance = instance;
+        this.vehicle = vehicle;
+        this.instance = vehicle.vin;
     }
 
     static convertName(name) {
@@ -139,6 +140,12 @@ class MQTT {
         return {
             device_class,
             name,
+            device: {
+                identifiers: [this.vehicle.vin],
+                manufacturer: this.vehicle.make,
+                model: this.vehicle.year,
+                name: this.vehicle.toString()
+            },
             availability_topic: this.getAvailabilityTopic(),
             payload_available: 'true',
             payload_not_available: 'false',

@@ -3,11 +3,13 @@ const _ = require('lodash');
 
 const { Diagnostic } = require('../src/diagnostic');
 const MQTT = require('../src/mqtt');
+const Vehicle = require('../src/vehicle');
 const apiResponse = require('./diagnostic.sample.json');
 
 describe('MQTT', () => {
     let mqtt;
-    beforeEach(() => mqtt = new MQTT());
+    let vehicle = new Vehicle({make: 'foo', model: 'bar', vin: 'XXX', year: 2020});
+    beforeEach(() => mqtt = new MQTT(vehicle));
 
     it('should set defaults', () => {
         assert.strictEqual(mqtt.prefix, 'homeassistant');
@@ -57,6 +59,14 @@ describe('MQTT', () => {
             it('should generate config payloads', () => {
                 assert.deepStrictEqual(mqtt.getConfigPayload(d, d.diagnosticElements[0]), {
                     availability_topic: 'homeassistant/XXX/available',
+                    device: {
+                        identifiers: [
+                            'XXX'
+                        ],
+                        manufacturer: 'foo',
+                        model: 2020,
+                        name: '2020 foo bar'
+                    },
                     device_class: 'temperature',
                     json_attributes_template: undefined,
                     name: 'Ambient Air Temperature',
@@ -79,6 +89,14 @@ describe('MQTT', () => {
             it('should generate config payloads', () => {
                 assert.deepStrictEqual(mqtt.getConfigPayload(d, d.diagnosticElements[1]), {
                     availability_topic: 'homeassistant/XXX/available',
+                    device: {
+                        identifiers: [
+                            'XXX'
+                        ],
+                        manufacturer: 'foo',
+                        model: 2020,
+                        name: '2020 foo bar'
+                    },
                     device_class: undefined,
                     json_attributes_template: undefined,
                     name: 'Priority Charge Indicator',
@@ -103,6 +121,14 @@ describe('MQTT', () => {
             it('should generate payloads with an attribute', () => {
                 assert.deepStrictEqual(mqtt.getConfigPayload(d, d.diagnosticElements[0]), {
                     availability_topic: 'homeassistant/XXX/available',
+                    device: {
+                        identifiers: [
+                            'XXX'
+                        ],
+                        manufacturer: 'foo',
+                        model: 2020,
+                        name: '2020 foo bar'
+                    },
                     device_class: 'pressure',
                     json_attributes_template: "{{ {'recommendation': value_json.tire_pressure_placard_front} | tojson }}",
                     name: 'Tire Pressure: Left Front',
