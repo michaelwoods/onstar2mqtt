@@ -29,10 +29,6 @@ let loop;
 (async () => {
     try {
         const onStar = OnStar.create(onstarConfig);
-        const client = await mqtt.connectAsync(`${mqttConfig.tls
-            ? 'mqtts' : 'mqtt'}://${mqttConfig.host}:${mqttConfig.port}`,
-            { username: mqttConfig.username, password: mqttConfig.password });
-
         console.log('Requesting vehicles.');
         const vehiclesRes = await onStar.getAccountVehicles();
         console.log(_.get(vehiclesRes, 'status'));
@@ -44,9 +40,21 @@ let loop;
         for (const v of vehicles) {
             console.log(v.toString());
         }
-        const mqttHA = new MQTT('homeassistant', vehicles[0].vin);
 
+        const mqttHA = new MQTT('homeassistant', vehicles[0].vin);
+        const availTopic = mqttHA.getAvailabilityTopic();
+        const client = await mqtt.connectAsync(`${mqttConfig.tls
+            ? 'mqtts' : 'mqtt'}://${mqttConfig.host}:${mqttConfig.port}`, {
+            username: mqttConfig.username,
+            password: mqttConfig.password,
+            will: {topic: availTopic, payload: 'false', retain: true}
+        });
+
+        await client.publish(availTopic, 'true', {retain: true});
+
+        const configurations = new Map();
         const run = async () => {
+            const states = new Map();
             // Note: the library is set to use only the configured VIN, but using multiple for future proofing.
             for (const v of vehicles) {
                 console.log('Requesting diagnostics:')
@@ -63,16 +71,31 @@ let loop;
                     if (!s.hasElements()) {
                         continue;
                     }
-                    // configure, then set state
+                    // configure once, then set or update states
                     for (const d of s.diagnosticElements) {
-                        console.log(mqttHA.getConfigTopic(d));
-                        console.log(JSON.stringify(mqttHA.getConfigPayload(s, d)));
-                        await client.publish(mqttHA.getConfigTopic(d), JSON.stringify(mqttHA.getConfigPayload(s, d)));
+                        const topic = mqttHA.getConfigTopic(d)
+                        const payload = mqttHA.getConfigPayload(s, d);
+                        configurations.set(topic, {configured: false, payload});
                     }
-                    console.log(mqttHA.getStateTopic(s));
-                    console.log(JSON.stringify(mqttHA.getStatePayload(s)));
-                    await client.publish(mqttHA.getStateTopic(s), JSON.stringify(mqttHA.getStatePayload(s)));
+
+                    const topic = mqttHA.getStateTopic(s);
+                    const payload = mqttHA.getStatePayload(s);
+                    states.set(topic, payload);
                 }
+            }
+            for (let [topic, config] of configurations) {
+                // configure once
+                if (!config.configured) {
+                    config.configured = true;
+                    const {payload} = config;
+                    console.log(`${topic} ${JSON.stringify(payload)}`);
+                    await client.publish(topic, JSON.stringify(payload), {retain: true});
+                }
+            }
+            // update states
+            for (let [topic, state] of states) {
+                console.log(`${topic} ${JSON.stringify(state)}`);
+                await client.publish(topic, JSON.stringify(state), {retain: true});
             }
         };
 
@@ -80,7 +103,7 @@ let loop;
             .then(() => console.log('Done, sleeping.'))
             .catch(e => console.error(e))
 
-        main();
+        await main();
         loop = setInterval(main, onstarConfig.refreshInterval);
     } catch (e) {
         console.error(e);

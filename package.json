@@ -1,6 +1,6 @@
 {
   "name": "onstar2mqtt",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "OnStarJS wrapper for MQTT",
   "main": "src/index.js",
   "scripts": {
@@ -16,7 +16,10 @@
     "onstar",
     "mqtt",
     "gm",
-    "chevrolet"
+    "chevrolet",
+    "homeassistant",
+    "home-assistant",
+    "home assistant"
   ],
   "author": "Michael Woods",
   "license": "MIT",

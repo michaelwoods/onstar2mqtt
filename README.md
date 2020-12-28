@@ -1,7 +1,9 @@
 # onstar2mqtt
-A service that utilizes the [OnStarJS](https://github.com/samrum/OnStarJS) library to expose OnStar data to MQTT topics. Mostly focused around EVs, however happy to accept PRs for other vehicle types.
+A service that utilizes the [OnStarJS](https://github.com/samrum/OnStarJS) library to expose OnStar data to MQTT topics.
 
-There is no official relationship with GM, Chevrolet nor OnStar. In fact, it would be nice if they'd even respond to development requests, so we wouldn't have to reverse engineer their API.
+The functionality is mostly focused around EVs (specifically the Bolt EV), however PRs for other vehicle types are certainly welcome.
+
+There is no affiliation with this project and GM, Chevrolet nor OnStar. In fact, it would be nice if they'd even respond to development requests so we wouldn't have to reverse engineer their API.
 
 ## Running
 Collect the following information:
@@ -49,10 +51,10 @@ MQTT_PASSWORD=
 ```
 ### Node.js
 It's a typical node.js application, define the same environment values as described in the docker sections and run with:
-`npm run start`. Currently, only tested with Node.js 12.x.
+`npm run start`. Currently, this is only tested with Node.js 12.x.
 
 ### Home Assistant configuration templates
-MQTT auto discovery is enabled. For further integrations see [HA-MQTT.md](HA-MQTT.md).
+MQTT auto discovery is enabled. For further integrations and screenshots see [HA-MQTT.md](HA-MQTT.md).
 
 ## Development
 ### Running

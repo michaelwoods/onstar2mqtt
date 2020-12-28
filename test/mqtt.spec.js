@@ -56,9 +56,12 @@ describe('MQTT', () => {
             beforeEach(() => d = new Diagnostic(_.get(apiResponse, 'commandResponse.body.diagnosticResponse[0]')));
             it('should generate config payloads', () => {
                 assert.deepStrictEqual(mqtt.getConfigPayload(d, d.diagnosticElements[0]), {
+                    availability_topic: 'homeassistant/XXX/available',
                     device_class: 'temperature',
                     json_attributes_template: undefined,
                     name: 'Ambient Air Temperature',
+                    payload_available: 'true',
+                    payload_not_available: 'false',
                     state_topic: 'homeassistant/sensor/XXX/ambient_air_temperature/state',
                     unit_of_measurement: '°C',
                     value_template: '{{ value_json.ambient_air_temperature }}'
@@ -75,19 +78,22 @@ describe('MQTT', () => {
             beforeEach(() => d = new Diagnostic(_.get(apiResponse, 'commandResponse.body.diagnosticResponse[3]')));
             it('should generate config payloads', () => {
                 assert.deepStrictEqual(mqtt.getConfigPayload(d, d.diagnosticElements[1]), {
-                  device_class: undefined,
-                  json_attributes_template: undefined,
-                  name: 'Priority Charge Indicator',
-                  state_topic: 'homeassistant/binary_sensor/XXX/ev_charge_state/state',
-                  unit_of_measurement: undefined,
-                  value_template: '{{ value_json.priority_charge_indicator }}'
+                    availability_topic: 'homeassistant/XXX/available',
+                    device_class: undefined,
+                    json_attributes_template: undefined,
+                    name: 'Priority Charge Indicator',
+                    payload_available: 'true',
+                    payload_not_available: 'false',
+                    state_topic: 'homeassistant/binary_sensor/XXX/ev_charge_state/state',
+                    unit_of_measurement: undefined,
+                    value_template: '{{ value_json.priority_charge_indicator }}'
                 });
             });
             it('should generate state payloads', () => {
                 assert.deepStrictEqual(mqtt.getStatePayload(d), {
-                  ev_charge_state: false,
-                  priority_charge_indicator: false,
-                  priority_charge_status: false
+                    ev_charge_state: false,
+                    priority_charge_indicator: false,
+                    priority_charge_status: false
                 });
             });
         });
@@ -96,9 +102,12 @@ describe('MQTT', () => {
             beforeEach(() => d = new Diagnostic(_.get(apiResponse, 'commandResponse.body.diagnosticResponse[8]')));
             it('should generate payloads with an attribute', () => {
                 assert.deepStrictEqual(mqtt.getConfigPayload(d, d.diagnosticElements[0]), {
+                    availability_topic: 'homeassistant/XXX/available',
                     device_class: 'pressure',
-                    json_attributes_template: '{{ {"recommendation": value_json.tire_pressure_placard_front} | tojson }}',
+                    json_attributes_template: "{{ {'recommendation': value_json.tire_pressure_placard_front} | tojson }}",
                     name: 'Tire Pressure: Left Front',
+                    payload_available: 'true',
+                    payload_not_available: 'false',
                     state_topic: 'homeassistant/sensor/XXX/tire_pressure/state',
                     unit_of_measurement: 'kPa',
                     value_template: '{{ value_json.tire_pressure_lf }}'
