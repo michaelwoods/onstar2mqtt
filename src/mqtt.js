@@ -150,7 +150,7 @@ class MQTT {
             payload_not_available: 'false',
             state_topic: this.getStateTopic(diag),
             value_template: `{{ value_json.${MQTT.convertName(diagEl.name)} }}`,
-            json_attributes_topic: this.getStateTopic(diag),
+            json_attributes_topic: _.isUndefined(attr) ? undefined : this.getStateTopic(diag),
             json_attributes_template: attr
         };
     }
@@ -160,23 +160,6 @@ class MQTT {
         return _.extend(
             this.mapBaseConfigPayload(diag, diagEl, device_class, name, attr),
             {unit_of_measurement: diagEl.unit});
-        return {
-            device_class,
-            name,
-            device: {
-                identifiers: [this.vehicle.vin],
-                manufacturer: this.vehicle.make,
-                model: this.vehicle.year,
-                name: this.vehicle.toString()
-            },
-            availability_topic: this.getAvailabilityTopic(),
-            payload_available: 'true',
-            payload_not_available: 'false',
-            state_topic: this.getStateTopic(diag),
-            unit_of_measurement: diagEl.unit,
-            value_template: `{{ value_json.${MQTT.convertName(diagEl.name)} }}`,
-            json_attributes_template: attr
-        };
     }
 
     mapBinarySensorConfigPayload(diag, diagEl, device_class, name, attr) {
