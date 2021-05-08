@@ -31,7 +31,7 @@
     "async-mqtt": "^2.6.1",
     "convert-units": "^2.3.4",
     "lodash": "^4.17.21",
-    "onstarjs": "^2.0.14",
+    "onstarjs": "^2.1.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
