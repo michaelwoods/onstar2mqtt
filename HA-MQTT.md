@@ -5,7 +5,19 @@ Create a new dashboard, or use the cards in your own view. The `mdi:car-electric
 
 ![lovelace screenshot](images/lovelace.png)
 
-yaml:
+script yaml:
+```yaml
+alias: Car - Start Vehicle
+sequence:
+  - service: mqtt.publish
+    data:
+      topic: homeassistant/YOUR_CAR_VIN/command
+      payload: '{"command": "startVehicle"}'
+mode: single
+icon: 'mdi:car-electric'
+```
+
+dashboard yaml:
 ```yaml
 views:
   - badges: []
@@ -44,22 +56,54 @@ views:
             icon: 'mdi:car-tire-alert'
         columns: 2
         title: Tires
-      - type: glance
-        entities:
-          - entity: sensor.last_trip_total_distance
-            name: Distance
-          - entity: sensor.last_trip_electric_econ
-            name: Economy
-        title: Last Trip
       - type: entities
         title: Mileage
         entities:
-          - entity: sensor.odometer
-          - entity: sensor.lifetime_energy_used
           - entity: sensor.lifetime_mpge
           - entity: sensor.lifetime_efficiency
           - entity: sensor.electric_economy
-      - type: glance
+        state_color: true
+        footer:
+          type: 'custom:mini-graph-card'
+          entities:
+            - entity: sensor.odometer
+            - entity: sensor.lifetime_energy_used
+              y_axis: secondary
+              show_state: true
+          hours_to_show: 672
+          group_by: date
+          decimals: 0
+          show:
+            graph: bar
+            name: false
+            icon: false
+      - type: entities
+        entities:
+          - entity: binary_sensor.ev_plug_state
+            secondary_info: last-changed
+          - entity: binary_sensor.ev_charge_state
+            secondary_info: last-changed
+          - entity: binary_sensor.priority_charge_indicator
+          - entity: binary_sensor.priority_charge_status
+          - entity: sensor.ev_plug_voltage
+          - entity: sensor.interm_volt_batt_volt
+          - entity: sensor.charger_power_level
+        title: Charging
+        state_color: true
+      - type: 'custom:mini-graph-card'
+        entities:
+          - entity: sensor.last_trip_total_distance
+          - entity: sensor.last_trip_electric_econ
+            y_axis: secondary
+            show_state: true
+        name: Last Trip
+        hours_to_show: 672
+        group_by: date
+        agreggate_func: null
+        show:
+          graph: bar
+          icon: false
+      - type: 'custom:mini-graph-card'
         entities:
           - entity: sensor.ambient_air_temperature
             name: Ambient
@@ -67,19 +111,41 @@ views:
             name: Battery
           - entity: sensor.kewr_daynight_temperature
             name: Outdoor
-        title: Temperature
-      - type: entities
-        entities:
-          - entity: binary_sensor.ev_plug_state
-          - entity: binary_sensor.ev_charge_state
-          - entity: binary_sensor.priority_charge_indicator
-          - entity: binary_sensor.priority_charge_status
-          - entity: sensor.ev_plug_voltage
-          - entity: sensor.interm_volt_batt_volt
-          - entity: sensor.charger_power_level
-        title: Charging
+        name: Temperature
+        hours_to_show: 24
+        points_per_hour: 1
+        line_width: 2
+      - type: grid
+        cards:
+          - type: button
+            tap_action:
+              action: toggle
+            entity: script.car_start_vehicle
+            name: Start
+            show_state: false
+          - type: button
+            tap_action:
+              action: toggle
+            entity: script.car_cancel_start_vehicle
+            name: Cancel Start
+            show_state: false
+            icon: 'mdi:car-off'
+          - type: button
+            tap_action:
+              action: toggle
+            entity: script.car_lock_doors
+            name: Lock
+            show_state: false
+            icon: 'mdi:car-door-lock'
+          - type: button
+            tap_action:
+              action: toggle
+            entity: script.car_unlock_doors
+            name: Unlock
+            show_state: false
+            icon: 'mdi:car-door'
+        columns: 2
 title: Bolt EV
-
 ```
 
 TODO
