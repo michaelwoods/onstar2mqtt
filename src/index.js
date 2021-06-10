@@ -1,3 +1,4 @@
+
 const OnStar = require('onstarjs');
 const mqtt = require('async-mqtt');
 const uuidv4 = require('uuid').v4;
@@ -5,6 +6,7 @@ const _ = require('lodash');
 const Vehicle = require('./vehicle');
 const {Diagnostic} = require('./diagnostic');
 const MQTT = require('./mqtt');
+const Commands = require('./commands');
 
 const onstarConfig = {
     deviceId: process.env.ONSTAR_DEVICEID || uuidv4(),
@@ -13,7 +15,8 @@ const onstarConfig = {
     password: process.env.ONSTAR_PASSWORD,
     onStarPin: process.env.ONSTAR_PIN,
     checkRequestStatus: process.env.ONSTAR_SYNC === "true" || true,
-    refreshInterval: parseInt(process.env.ONSTAR_REFRESH) || (30 * 60 * 1000) // 30 min
+    refreshInterval: parseInt(process.env.ONSTAR_REFRESH) || (30 * 60 * 1000), // 30 min
+    allowCommands: _.toLower(_.get(process, 'env.ONSTAR_ALLOW_COMMANDS', 'true')) === 'true'
 };
 
 const mqttConfig = {
@@ -25,39 +28,63 @@ const mqttConfig = {
     prefix: process.env.MQTT_PREFIX || 'homeassistant',
 };
 
-let loop;
+let loop, commands, vehicles;
+
+const init = async () => {
+    commands = new Commands(OnStar.create(onstarConfig));
+    console.log('Requesting vehicles.');
+    const vehiclesRes = await commands.getAccountVehicles();
+    console.log(_.get(vehiclesRes, 'status'));
+    vehicles = _.map(
+        _.get(vehiclesRes, 'response.data.vehicles.vehicle'),
+        v => new Vehicle(v)
+    );
+    console.log('Vehicles returned:');
+    for (const v of vehicles) {
+        console.log(v.toString());
+    }
+}
+
+const connectMQTT = async () => {
+    const mqttHA = new MQTT(vehicles[0], 'homeassistant');
+    const availTopic = mqttHA.getAvailabilityTopic();
+    const client = await mqtt.connectAsync(`${mqttConfig.tls
+        ? 'mqtts' : 'mqtt'}://${mqttConfig.host}:${mqttConfig.port}`, {
+        username: mqttConfig.username,
+        password: mqttConfig.password,
+        will: {topic: availTopic, payload: 'false', retain: true}
+    });
+
+    if (onstarConfig.allowCommands) {
+        client.on('message', (topic, message) => {
+            console.log(`Subscription message: ${topic} ${message}`);
+            const {command, options} = JSON.parse(message);
+            const commandFn = commands[command].bind(commands);
+            commandFn(options || {})
+                .then(() => console.log(`Command completed: ${command}`))
+                .catch(err=> console.error(`Command error: ${command} ${err}`));
+        });
+        const topic = mqttHA.getCommandTopic();
+        console.log(`Subscribed to: ${topic}`);
+        await client.subscribe(topic);
+    }
+
+    await client.publish(availTopic, 'true', {retain: true});
+    return {mqttHA, client};
+};
+
 (async () => {
     try {
-        const onStar = OnStar.create(onstarConfig);
-        console.log('Requesting vehicles.');
-        const vehiclesRes = await onStar.getAccountVehicles();
-        console.log(_.get(vehiclesRes, 'status'));
-        const vehicles = _.map(
-            _.get(vehiclesRes, 'response.data.vehicles.vehicle'),
-            v => new Vehicle(v)
-        );
-        console.log('Vehicles returned:');
-        for (const v of vehicles) {
-            console.log(v.toString());
-        }
+        await init();
 
-        const mqttHA = new MQTT(vehicles[0], 'homeassistant');
-        const availTopic = mqttHA.getAvailabilityTopic();
-        const client = await mqtt.connectAsync(`${mqttConfig.tls
-            ? 'mqtts' : 'mqtt'}://${mqttConfig.host}:${mqttConfig.port}`, {
-            username: mqttConfig.username,
-            password: mqttConfig.password,
-            will: {topic: availTopic, payload: 'false', retain: true}
-        });
-
-        await client.publish(availTopic, 'true', {retain: true});
+        const {mqttHA, client} = await connectMQTT();
 
         const configurations = new Map();
         const run = async () => {
             const states = new Map();
             const v = vehicles[0];
             console.log('Requesting diagnostics:')
-            const statsRes = await onStar.diagnostics({
+            const statsRes = await commands.diagnostics({
                 diagnosticItem: v.getSupported()
             });
             console.log(_.get(statsRes, 'status'));

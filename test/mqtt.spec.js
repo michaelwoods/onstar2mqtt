@@ -30,6 +30,15 @@ describe('MQTT', () => {
 
     describe('topics', () => {
         let d;
+
+        it('should generate availability topic', () => {
+            assert.strictEqual(mqtt.getAvailabilityTopic(), 'homeassistant/XXX/available');
+        });
+
+        it('should generate command topic', () => {
+            assert.strictEqual(mqtt.getCommandTopic(), 'homeassistant/XXX/command');
+        });
+
         describe('sensor', () => {
             beforeEach(() => d = new Diagnostic(_.get(apiResponse, 'commandResponse.body.diagnosticResponse[0]')));
 

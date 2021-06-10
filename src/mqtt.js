@@ -74,6 +74,10 @@ class MQTT {
         return `${this.prefix}/${this.instance}/available`;
     }
 
+    getCommandTopic() {
+        return `${this.prefix}/${this.instance}/command`;
+    }
+
     /**
      *
      * @param {DiagnosticElement} diag
