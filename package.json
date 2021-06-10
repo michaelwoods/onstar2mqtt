@@ -1,6 +1,6 @@
 {
   "name": "onstar2mqtt",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "OnStarJS wrapper for MQTT",
   "main": "src/index.js",
   "scripts": {
