@@ -62,7 +62,7 @@ MQTT auto discovery is enabled. For further integrations and screenshots see [HA
 ### Testing
 `npm run test`
 ### Coverage
-`rpm run coverage`
+`npm run coverage`
 ### Releases
 `npm version [major|minor|patch] -m "Version %s" && git push --follow-tags`
 
@@ -71,4 +71,3 @@ Publish the release on GitHub to trigger a release build (ie, update 'latest' do
 ## TODO
 1. Logging library
 1. Figure out metric->imperial unit handling
-1. Enable write actions to lock doors, flash lights, remote start, etc.
