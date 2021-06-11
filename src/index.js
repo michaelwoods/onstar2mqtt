@@ -84,6 +84,8 @@ const configureMQTT = async (commands, client, mqttHA) => {
         const mqttHA = new MQTT(vehicles[0], 'homeassistant');
         const availTopic = mqttHA.getAvailabilityTopic();
         const client = await connectMQTT(availTopic);
+        client.publish(availTopic, 'true', {retain: true})
+            .then(() => logger.debug('Published availability'));
         await configureMQTT(commands, client, mqttHA);
 
         const configurations = new Map();
