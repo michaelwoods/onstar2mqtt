@@ -27,6 +27,8 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: michaelwoods/onstar2mqtt
+          flavor: |
+            latest=true
           tags: |
             type=ref,event=branch
             type=schedule,pattern=weekly
