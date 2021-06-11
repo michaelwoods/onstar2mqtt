@@ -30,7 +30,6 @@ jobs:
           tags: |
             type=ref,event=branch
             type=schedule,pattern=weekly
-            type=sha
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2.1.5
