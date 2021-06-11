@@ -69,5 +69,4 @@ MQTT auto discovery is enabled. For further integrations and screenshots see [HA
 Publish the release on GitHub to trigger a release build (ie, update 'latest' docker tag).
 
 ## TODO
-1. Logging library
 1. Figure out metric->imperial unit handling
