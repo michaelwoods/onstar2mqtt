@@ -5,7 +5,7 @@ const _ = require('lodash');
 const Vehicle = require('./vehicle');
 const {Diagnostic} = require('./diagnostic');
 const MQTT = require('./mqtt');
-const {Commands} = require('./commands');
+const Commands = require('./commands');
 const logger = require('./logger');
 
 

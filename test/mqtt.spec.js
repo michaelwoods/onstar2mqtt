@@ -86,10 +86,31 @@ describe('MQTT', () => {
                     unit_of_measurement: '°C',
                     value_template: '{{ value_json.ambient_air_temperature }}'
                 });
+                assert.deepStrictEqual(mqtt.getConfigPayload(d, d.diagnosticElements[1]), {
+                    availability_topic: 'homeassistant/XXX/available',
+                    device: {
+                        identifiers: [
+                            'XXX'
+                        ],
+                        manufacturer: 'foo',
+                        model: 2020,
+                        name: '2020 foo bar'
+                    },
+                    device_class: 'temperature',
+                    json_attributes_template: undefined,
+                    name: 'Ambient Air Temperature F',
+                    payload_available: 'true',
+                    payload_not_available: 'false',
+                    state_topic: 'homeassistant/sensor/XXX/ambient_air_temperature/state',
+                    json_attributes_topic: undefined,
+                    unit_of_measurement: '°F',
+                    value_template: '{{ value_json.ambient_air_temperature_f }}'
+                });
             });
             it('should generate state payloads', () => {
                 assert.deepStrictEqual(mqtt.getStatePayload(d), {
-                    ambient_air_temperature: 15
+                    ambient_air_temperature: 15,
+                    ambient_air_temperature_f: 59
                 });
             });
         });

@@ -10,6 +10,9 @@ class Diagnostic {
             d => _.has(d, 'value') && _.has(d, 'unit')
         );
         this.diagnosticElements = _.map(validEle, e => new DiagnosticElement(e));
+        const converted = _.map(_.filter(this.diagnosticElements, e => e.isConvertible),
+            e => DiagnosticElement.convert(e));
+        this.diagnosticElements.push(... converted);
     }
 
     hasElements() {
@@ -24,6 +27,29 @@ class Diagnostic {
 }
 
 class DiagnosticElement {
+    /**
+     *
+     * @param {DiagnosticElement} element
+     */
+    static convert(element) {
+        const {name, unit, value} = element;
+        const convertedUnit = Measurement.convertUnit(unit);
+        return new DiagnosticElement({
+            name: DiagnosticElement.convertName(name, convertedUnit),
+            unit: convertedUnit,
+            value: Measurement.convertValue(value, unit)
+        })
+    }
+
+    static convertName(name, unit) {
+        return `${name} ${_.replace(_.toUpper(unit), /\W/g, '')}`;
+    }
+
+    /**
+     * @param {string} ele.name
+     * @param {string|number} ele.value
+     * @param {string} ele.unit
+     */
     constructor(ele) {
         this._name = ele.name;
         this.measurement = new Measurement(ele.value, ele.unit);
@@ -39,6 +65,10 @@ class DiagnosticElement {
 
     get unit() {
         return this.measurement.unit;
+    }
+
+    get isConvertible() {
+        return this.measurement.isConvertible;
     }
 
     toString() {
