@@ -28,9 +28,8 @@ jobs:
         with:
           images: michaelwoods/onstar2mqtt
           tags: |
+            type=ref,event=branch
             type=schedule,pattern=weekly
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=sha
 
       - name: Use Node.js ${{ matrix.node-version }}
