@@ -129,6 +129,7 @@ class MQTT {
                     break;
                 default:
                     // coerce to number if possible, API uses strings :eyeroll:
+                    // eslint-disable-next-line no-case-declarations
                     const num = _.toNumber(e.value);
                     value = _.isNaN(num) ? e.value : num;
                     break;
