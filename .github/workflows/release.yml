@@ -13,10 +13,9 @@ jobs:
 
       - name: Docker meta
         id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v3.3.0
+        uses: docker/metadata-action@v3
         with:
           images: michaelwoods/onstar2mqtt
-          tag-sha: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1.2.0
@@ -28,7 +27,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Push to DockerHub
-        uses: docker/build-push-action@v2.5.0
+        uses: docker/build-push-action@v2
         with:
           platforms: linux/amd64,linux/arm64
           push: true
