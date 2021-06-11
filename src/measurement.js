@@ -54,17 +54,17 @@ class Measurement {
     static convertValue(value, unit) {
         switch (unit) {
             case '°C':
-                value = convert(value).from('C').to('F');
+                value = _.round(convert(value).from('C').to('F'));
                 break;
             case 'km':
-                value = convert(value).from('km').to('mi');
+                value = _.round(convert(value).from('km').to('mi'), 1);
                 break;
             case 'kPa':
-                value = convert(value).from('kPa').to('psi');
+                value = _.round(convert(value).from('kPa').to('psi'), 1);
                 break;
             case 'km/l(e)':
                 // km/L =  (1.609344 / 3.785411784) * MPG
-                value = value / (1.609344 / 3.785411784);
+                value = _.round(value / (1.609344 / 3.785411784), 1);
                 break;
         }
         return value;
