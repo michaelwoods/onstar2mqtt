@@ -28,6 +28,16 @@ describe('MQTT', () => {
         assert.strictEqual(MQTT.convertFriendlyName('FOO BAR'), 'Foo Bar');
     });
 
+    it('should determine sensor types', () => {
+        assert.strictEqual(MQTT.determineSensorType('EV CHARGE STATE'), 'binary_sensor');
+        assert.strictEqual(MQTT.determineSensorType('EV PLUG STATE'), 'binary_sensor');
+        assert.strictEqual(MQTT.determineSensorType('PRIORITY CHARGE INDICATOR'), 'binary_sensor');
+        assert.strictEqual(MQTT.determineSensorType('PRIORITY CHARGE STATUS'), 'binary_sensor');
+        assert.strictEqual(MQTT.determineSensorType('getLocation'), 'device_tracker');
+        assert.strictEqual(MQTT.determineSensorType('foo'), 'sensor');
+        assert.strictEqual(MQTT.determineSensorType(''), 'sensor');
+    });
+
     describe('topics', () => {
         let d;
 

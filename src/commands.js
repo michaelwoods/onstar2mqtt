@@ -109,6 +109,10 @@ class Commands {
         return this.onstar.setChargingProfile();
     }
 
+    async getLocation() {
+        return this.onstar.location();
+    }
+
     async diagnostics({diagnosticItem = [
         Commands.CONSTANTS.DIAGNOSTICS.ODOMETER,
         Commands.CONSTANTS.DIAGNOSTICS.TIRE_PRESSURE,

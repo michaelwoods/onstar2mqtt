@@ -1,5 +1,29 @@
 Sample configs for MQTT Home Assistant integration.
 
+### Location
+Unfortunately, the MQTT Device tracker uses a home/not_home state and the MQTT Json device tracker does not support
+the discovery schema so a manual entity configuration is required.
+
+device tracker yaml:
+```yaml
+device_tracker:
+  - platform: mqtt_json
+    devices:
+      your_car_name: homeassistant/device_tracker/YOUR_CAR_VIN/getlocation/state
+```
+
+script yaml:
+```yaml
+alias: Car - Location
+sequence:
+  - service: mqtt.publish
+    data:
+      topic: homeassistant/YOUR_CAR_VIN/command
+      payload: '{"command": "getLocation"}'
+mode: single
+icon: 'mdi:map-marker'
+```
+
 ### Lovelace Dashboard
 Create a new dashboard, or use the cards in your own view. The `mdi:car-electric` icon works well here.
 

@@ -57,13 +57,15 @@ class MQTT {
             case 'PRIORITY CHARGE INDICATOR':
             case 'PRIORITY CHARGE STATUS':
                 return 'binary_sensor';
+            case 'getLocation':
+                return 'device_tracker';
             default:
                 return 'sensor';
         }
     }
 
     /**
-     * @param {'sensor'|'binary_sensor'} type
+     * @param {'sensor'|'binary_sensor'|'device_tracker'} type
      * @returns {string}
      */
     getBaseTopic(type = 'sensor') {

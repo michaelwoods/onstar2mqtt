@@ -65,10 +65,28 @@ const configureMQTT = async (commands, client, mqttHA) => {
     client.on('message', (topic, message) => {
         logger.debug('Subscription message', {topic, message});
         const {command, options} = JSON.parse(message);
-        const commandFn = commands[command].bind(commands);
+        const cmd = commands[command];
+        if (!cmd) {
+            logger.error('Command not found', {command});
+            return;
+        }
+        const commandFn = cmd.bind(commands);
         logger.info('Command sent', {command});
         commandFn(options || {})
-            .then(() => logger.info('Command completed', {command}))
+            .then(data => {
+                // TODO refactor the response handling for commands
+                logger.info('Command completed', {command});
+                const location = _.get(data, 'response.data.commandResponse.body.location');
+                if (data && location) {
+                    logger.info('Command response data', {location});
+                    const topic = mqttHA.getStateTopic({name: command});
+                    // TODO create device_tracker entity. MQTT device tracker doesn't support lat/lon and mqtt_json
+                    // doesn't have discovery
+                    client.publish(topic,
+                        JSON.stringify({latitude: location.lat, longitude: location.long}), {retain: true})
+                        .then(() => logger.info('Published location to topic.', {topic}));
+                }
+            })
             .catch(err=> logger.error('Command error', {command, err}));
     });
     const topic = mqttHA.getCommandTopic();
