@@ -36,10 +36,11 @@ const _ = require('lodash');
  *      }
  */
 class MQTT {
-    constructor(vehicle, prefix = 'homeassistant') {
+    constructor(vehicle, prefix = 'homeassistant', namePrefix) {
         this.prefix = prefix;
         this.vehicle = vehicle;
         this.instance = vehicle.vin;
+        this.namePrefix = namePrefix
     }
 
     static convertName(name) {
@@ -62,6 +63,15 @@ class MQTT {
             default:
                 return 'sensor';
         }
+    }
+
+    /**
+     * @param {string} name
+     * @returns {string}
+     */
+    addNamePrefix(name) {
+        if (!this.namePrefix) return name
+        return `${this.namePrefix} ${name}`
     }
 
     /**
@@ -143,6 +153,7 @@ class MQTT {
 
     mapBaseConfigPayload(diag, diagEl, device_class, name, attr) {
         name = name || MQTT.convertFriendlyName(diagEl.name);
+        name = this.addNamePrefix(name);
         return {
             device_class,
             name,

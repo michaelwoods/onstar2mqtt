@@ -28,6 +28,7 @@ const mqttConfig = {
     port: parseInt(process.env.MQTT_PORT) || 1883,
     tls: process.env.MQTT_TLS || false,
     prefix: process.env.MQTT_PREFIX || 'homeassistant',
+    namePrefix: process.env.MQTT_NAME_PREFIX || '',
 };
 logger.info('MQTT Config', {mqttConfig});
 
@@ -43,6 +44,15 @@ const getVehicles = async commands => {
     );
     logger.debug('Vehicle request response', {vehicles: _.map(vehicles, v => v.toString())});
     return vehicles;
+}
+
+const getCurrentVehicle = async commands => {
+    const vehicles = await getVehicles(commands);
+    const currentVeh = _.find(vehicles, v => v.vin.toLowerCase() === onstarConfig.vin.toLowerCase()); 
+    if (!currentVeh) {
+        throw new Error(`Configured vehicle VIN ${onstarConfig.vin} not available in account vehicles`);
+    }
+    return currentVeh;
 }
 
 const connectMQTT = async availabilityTopic => {
@@ -97,9 +107,9 @@ const configureMQTT = async (commands, client, mqttHA) => {
 (async () => {
     try {
         const commands = init();
-        const vehicles = await getVehicles(commands);
+        const vehicle = await getCurrentVehicle(commands);
 
-        const mqttHA = new MQTT(vehicles[0], 'homeassistant');
+        const mqttHA = new MQTT(vehicle, mqttConfig.prefix, mqttConfig.namePrefix);
         const availTopic = mqttHA.getAvailabilityTopic();
         const client = await connectMQTT(availTopic);
         client.publish(availTopic, 'true', {retain: true})
@@ -109,7 +119,7 @@ const configureMQTT = async (commands, client, mqttHA) => {
         const configurations = new Map();
         const run = async () => {
             const states = new Map();
-            const v = vehicles[0];
+            const v = vehicle;
             logger.info('Requesting diagnostics');
             const statsRes = await commands.diagnostics({diagnosticItem: v.getSupported()});
             logger.info('Diagnostic request status', {status: _.get(statsRes, 'status')});
