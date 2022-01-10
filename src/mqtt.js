@@ -205,6 +205,8 @@ class MQTT {
             case 'HYBRID BATTERY MINIMUM TEMPERATURE':
             case 'AMBIENT AIR TEMPERATURE':
             case 'AMBIENT AIR TEMPERATURE F':
+            case 'ENGINE COOLANT TEMP':
+            case 'ENGINE COOLANT TEMP F':
                 return this.mapSensorConfigPayload(diag, diagEl, 'temperature');
             case 'EV BATTERY LEVEL':
                 return this.mapSensorConfigPayload(diag, diagEl, 'battery');
