@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/michaelwoods/onstar2mqtt#readme",
   "dependencies": {
-    "async-mqtt": "^2.6.1",
+    "async-mqtt": "^2.6.2",
     "convert-units": "^2.3.4",
     "lodash": "^4.17.21",
     "onstarjs": "^2.3.2",
