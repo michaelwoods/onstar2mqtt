@@ -169,7 +169,8 @@ class MQTT {
             state_topic: this.getStateTopic(diag),
             value_template: `{{ value_json.${MQTT.convertName(diagEl.name)} }}`,
             json_attributes_topic: _.isUndefined(attr) ? undefined : this.getStateTopic(diag),
-            json_attributes_template: attr
+            json_attributes_template: attr,
+            unique_id: `${this.vehicle.vin}-${device_class}-${name}`
         };
     }
 
