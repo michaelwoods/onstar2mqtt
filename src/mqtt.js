@@ -154,6 +154,9 @@ class MQTT {
     mapBaseConfigPayload(diag, diagEl, device_class, name, attr) {
         name = name || MQTT.convertFriendlyName(diagEl.name);
         name = this.addNamePrefix(name);
+        // Generate the unique id from the vin and name
+        let unique_id = `${this.vehicle.vin}-${diagEl.name}`
+        unique_id = unique_id.replace(/\s+/g, '-').toLowerCase();
         return {
             device_class,
             name,
@@ -169,7 +172,8 @@ class MQTT {
             state_topic: this.getStateTopic(diag),
             value_template: `{{ value_json.${MQTT.convertName(diagEl.name)} }}`,
             json_attributes_topic: _.isUndefined(attr) ? undefined : this.getStateTopic(diag),
-            json_attributes_template: attr
+            json_attributes_template: attr,
+            unique_id: unique_id
         };
     }
 

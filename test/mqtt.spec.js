@@ -92,6 +92,7 @@ describe('MQTT', () => {
                     payload_available: 'true',
                     payload_not_available: 'false',
                     state_topic: 'homeassistant/sensor/XXX/ambient_air_temperature/state',
+                    unique_id: 'xxx-ambient-air-temperature',
                     json_attributes_topic: undefined,
                     unit_of_measurement: '°C',
                     value_template: '{{ value_json.ambient_air_temperature }}'
@@ -112,6 +113,7 @@ describe('MQTT', () => {
                     payload_available: 'true',
                     payload_not_available: 'false',
                     state_topic: 'homeassistant/sensor/XXX/ambient_air_temperature/state',
+                    unique_id: 'xxx-ambient-air-temperature-f',
                     json_attributes_topic: undefined,
                     unit_of_measurement: '°F',
                     value_template: '{{ value_json.ambient_air_temperature_f }}'
@@ -146,6 +148,7 @@ describe('MQTT', () => {
                     payload_off: false,
                     payload_on: true,
                     state_topic: 'homeassistant/binary_sensor/XXX/ev_charge_state/state',
+                    unique_id: 'xxx-priority-charge-indicator',
                     json_attributes_topic: undefined,
                     value_template: '{{ value_json.priority_charge_indicator }}'
                 });
@@ -178,6 +181,7 @@ describe('MQTT', () => {
                     payload_available: 'true',
                     payload_not_available: 'false',
                     state_topic: 'homeassistant/sensor/XXX/tire_pressure/state',
+                    unique_id: 'xxx-tire-pressure-lf',
                     json_attributes_topic: 'homeassistant/sensor/XXX/tire_pressure/state',
                     unit_of_measurement: 'kPa',
                     value_template: '{{ value_json.tire_pressure_lf }}'
