@@ -12,7 +12,7 @@ device_tracker:
       your_car_name: homeassistant/device_tracker/YOUR_CAR_VIN/getlocation/state
 ```
 
-script yaml:
+#### script yaml:
 ```yaml
 alias: Car - Location
 sequence:
@@ -29,7 +29,7 @@ Create a new dashboard, or use the cards in your own view. The `mdi:car-electric
 
 ![lovelace screenshot](images/lovelace.png)
 
-script yaml:
+#### script yaml:
 ```yaml
 alias: Car - Start Vehicle
 sequence:
@@ -40,8 +40,20 @@ sequence:
 mode: single
 icon: 'mdi:car-electric'
 ```
+#### Commands:
+[OnStarJS Command Docs](https://github.com/samrum/OnStarJS#commands)
+1. `getAccountVehicles`
+2. `startVehicle`
+3. `cancelStartVehicle`
+4. `alert`
+5. `cancelAlert`
+6. `lockDoor`
+7. `unlockDoor`
+8. `chargeOverride`
+9. `cancelChargeOverride`
+10. `getLocation`
 
-dashboard yaml:
+#### dashboard yaml:
 ```yaml
 views:
   - badges: []
@@ -171,6 +183,3 @@ views:
         columns: 2
 title: Bolt EV
 ```
-
-TODO
-- Utility meter that resets for monthly LIFETIME ENERGY USED. This seems to only be updated after a full charge, along with other data points.
