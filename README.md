@@ -67,6 +67,3 @@ MQTT auto discovery is enabled. For further integrations and screenshots see [HA
 `npm version [major|minor|patch] -m "Version %s" && git push --follow-tags`
 
 Publish the release on GitHub to trigger a release build (ie, update 'latest' docker tag).
-
-## TODO
-1. Figure out metric->imperial unit handling
