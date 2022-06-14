@@ -1,7 +1,7 @@
 # onstar2mqtt
 A service that utilizes the [OnStarJS](https://github.com/samrum/OnStarJS) library to expose OnStar data to MQTT topics.
 
-The functionality is mostly focused around EVs (specifically the Bolt EV), however PRs for other vehicle types are certainly welcome.
+This Fork is for Gas Vehicles. 
 
 There is no affiliation with this project and GM, Chevrolet nor OnStar. In fact, it would be nice if they'd even respond to development requests so we wouldn't have to reverse engineer their API.
 
@@ -57,6 +57,8 @@ It's a typical node.js application, define the same environment values as descri
 MQTT auto discovery is enabled. For further integrations and screenshots see [HA-MQTT.md](HA-MQTT.md).
 
 ## Development
+### Install Dependencies
+`npm install`
 ### Running
 `npm run start`
 ### Testing
