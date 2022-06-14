@@ -6,7 +6,9 @@ class Measurement {
         '°C',
         'km',
         'kPa',
-        'km/l(e)'
+        'km/l',
+        //This is put as lit as I had issues with it converting other values. 
+        'lit' 
     ];
 
     constructor(value, unit) {
@@ -30,8 +32,10 @@ class Measurement {
                 return 'km';
             case 'KPa':
                 return 'kPa';
-            case 'kmple':
-                return 'km/l(e)';
+            case 'kmpl':
+                return 'km/l';
+            case 'l':
+                return 'lit';
             case 'volts':
             case 'Volts':
                 return 'V';
@@ -62,10 +66,12 @@ class Measurement {
             case 'kPa':
                 value = _.round(convert(value).from('kPa').to('psi'), 1);
                 break;
-            case 'km/l(e)':
+            case 'km/l':
                 // km/L =  (1.609344 / 3.785411784) * MPG
                 value = _.round(value / (1.609344 / 3.785411784), 1);
                 break;
+            case 'lit':
+                value = _.round(value / 3.785411784, 1);
         }
         return value;
     }
@@ -83,8 +89,10 @@ class Measurement {
                 return 'mi';
             case 'kPa':
                 return 'psi';
-            case 'km/l(e)':
-                return 'mpg(e)';
+            case 'km/l':
+                return 'mpg';
+            case 'lit':
+                reutrn 'gal';
             default:
                 return unit;
         }
