@@ -25,7 +25,7 @@ icon: 'mdi:map-marker'
 ```
 
 ### Lovelace Dashboard
-Create a new dashboard, or use the cards in your own view. The `mdi:car-electric` icon works well here.
+Create a new dashboard, or use the cards in your own view. The `mdi:car` icon works well here.
 
 ![lovelace screenshot](images/lovelace.png)
 
@@ -38,7 +38,7 @@ sequence:
       topic: homeassistant/YOUR_CAR_VIN/command
       payload: '{"command": "startVehicle"}'
 mode: single
-icon: 'mdi:car-electric'
+icon: 'mdi:car-key'
 ```
 #### Commands:
 [OnStarJS Command Docs](https://github.com/samrum/OnStarJS#commands)
@@ -49,137 +49,136 @@ icon: 'mdi:car-electric'
 5. `cancelAlert`
 6. `lockDoor`
 7. `unlockDoor`
-8. `chargeOverride`
-9. `cancelChargeOverride`
 10. `getLocation`
 
 #### dashboard yaml:
 ```yaml
 views:
-  - badges: []
+  badges: []
     cards:
       - type: gauge
-        entity: sensor.ev_battery_level
-        min: 0
-        max: 100
-        name: Battery
+        entity: sensor.gas_range_mi
+        name: Range Miles
+        min: 1
+        max: 500
+        needle: true
         severity:
-          green: 60
-          yellow: 40
-          red: 15
+          green: 300
+          yellow: 100
+          red: 0
       - type: gauge
-        entity: sensor.ev_range
+        entity: sensor.fuel_amount_gal
+        max: 26
+        name: Fuel Level
         min: 0
-        max: 420
-        name: Range
+        needle: true
+        unit: G
         severity:
-          green: 250
-          yellow: 150
-          red: 75
-      - type: glance
-        entities:
-          - entity: sensor.tire_pressure_left_front
-            name: Left Front
-            icon: 'mdi:car-tire-alert'
-          - entity: sensor.tire_pressure_right_front
-            name: Right Front
-            icon: 'mdi:car-tire-alert'
-          - entity: sensor.tire_pressure_left_rear
-            name: Left Rear
-            icon: 'mdi:car-tire-alert'
-          - entity: sensor.tire_pressure_right_rear
-            name: Right Rear
-            icon: 'mdi:car-tire-alert'
+          green: 13
+          yellow: 6
+          red: 0
+      - square: false
         columns: 2
-        title: Tires
-      - type: entities
-        title: Mileage
-        entities:
-          - entity: sensor.lifetime_mpge
-          - entity: sensor.lifetime_efficiency
-          - entity: sensor.electric_economy
-        state_color: true
-        footer:
-          type: 'custom:mini-graph-card'
-          entities:
-            - entity: sensor.odometer
-            - entity: sensor.lifetime_energy_used
-              y_axis: secondary
-              show_state: true
-          hours_to_show: 672
-          group_by: date
-          decimals: 0
-          show:
-            graph: bar
-            name: false
-            icon: false
-      - type: entities
-        entities:
-          - entity: binary_sensor.ev_plug_state
-            secondary_info: last-changed
-          - entity: binary_sensor.ev_charge_state
-            secondary_info: last-changed
-          - entity: binary_sensor.priority_charge_indicator
-          - entity: binary_sensor.priority_charge_status
-          - entity: sensor.ev_plug_voltage
-          - entity: sensor.interm_volt_batt_volt
-          - entity: sensor.charger_power_level
-        title: Charging
-        state_color: true
-      - type: 'custom:mini-graph-card'
-        entities:
-          - entity: sensor.last_trip_total_distance
-          - entity: sensor.last_trip_electric_econ
-            y_axis: secondary
-            show_state: true
-        name: Last Trip
-        hours_to_show: 672
-        group_by: date
-        agreggate_func: null
-        show:
-          graph: bar
-          icon: false
-      - type: 'custom:mini-graph-card'
-        entities:
-          - entity: sensor.ambient_air_temperature
-            name: Ambient
-          - entity: sensor.hybrid_battery_minimum_temperature
-            name: Battery
-          - entity: sensor.kewr_daynight_temperature
-            name: Outdoor
-        name: Temperature
-        hours_to_show: 24
-        points_per_hour: 1
-        line_width: 2
-      - type: grid
+        type: grid
         cards:
-          - type: button
+          - show_name: true
+            show_icon: true
+            type: button
             tap_action:
               action: toggle
-            entity: script.car_start_vehicle
+            entity: script.start_truck
             name: Start
             show_state: false
-          - type: button
+            icon: mdi:car-key
+          - show_name: true
+            show_icon: true
+            type: button
             tap_action:
               action: toggle
-            entity: script.car_cancel_start_vehicle
+            entity: script.cancel_start
             name: Cancel Start
             show_state: false
-            icon: 'mdi:car-off'
-          - type: button
+            icon: mdi:car-off
+          - show_name: true
+            show_icon: true
+            type: button
             tap_action:
               action: toggle
-            entity: script.car_lock_doors
+            entity: script.lock_door
             name: Lock
             show_state: false
-            icon: 'mdi:car-door-lock'
-          - type: button
+            icon: mdi:car-door-lock
+          - show_name: true
+            show_icon: true
+            type: button
             tap_action:
               action: toggle
-            entity: script.car_unlock_doors
+            entity: script.unlock_door
             name: Unlock
             show_state: false
-            icon: 'mdi:car-door'
+            icon: mdi:car-door
+      - square: false
         columns: 2
-title: Bolt EV
+        type: grid
+        cards:
+          - type: gauge
+            entity: sensor.tire_pressure_left_front_psi
+            min: 1
+            max: 45
+            severity:
+              green: 35
+              yellow: 30
+              red: 42
+          - type: gauge
+            entity: sensor.tire_pressure_right_front_psi
+            min: 1
+            max: 45
+            needle: false
+            severity:
+              green: 35
+              yellow: 30
+              red: 42
+          - type: gauge
+            entity: sensor.tire_pressure_left_rear_psi
+            max: 45
+            severity:
+              green: 35
+              yellow: 30
+              red: 42
+          - type: gauge
+            entity: sensor.tire_pressure_right_rear_psi
+            max: 45
+            severity:
+              green: 35
+              yellow: 30
+              red: 42
+      - hours_to_show: 12
+        graph: line
+        type: sensor
+        entity: sensor.interm_volt_batt_volt
+        detail: 2
+      - type: gauge
+        entity: sensor.engine_coolant_temp
+        severity:
+          green: 0
+          yellow: 250
+          red: 300
+        max: 400
+        min: 1
+      - square: false
+        columns: 1
+        type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.lifetime_fuel_econ_mpg
+              - entity: sensor.last_trip_fuel_econ_mpg
+      - type: gauge
+        entity: sensor.oil_life
+        max: 100
+        needle: false
+        severity:
+          green: 70
+          yellow: 50
+          red: 30
 ```
