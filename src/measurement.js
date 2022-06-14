@@ -7,6 +7,8 @@ class Measurement {
         'km',
         'kPa',
         'km/l(e)'
+        // Helps with conversion to Gallons. 
+        'lit'
     ];
 
     constructor(value, unit) {
@@ -35,6 +37,8 @@ class Measurement {
             case 'volts':
             case 'Volts':
                 return 'V';
+            case 'l':
+                return 'lit';
             // these are states
             case 'Stat':
             case 'N/A':
@@ -65,6 +69,8 @@ class Measurement {
             case 'km/l(e)':
                 // km/L =  (1.609344 / 3.785411784) * MPG
                 value = _.round(value / (1.609344 / 3.785411784), 1);
+            case 'lit':
+                value = _.round(value / 3.785411784, 1);
                 break;
         }
         return value;
@@ -85,6 +91,8 @@ class Measurement {
                 return 'psi';
             case 'km/l(e)':
                 return 'mpg(e)';
+            case 'lit':
+                return 'gal';
             default:
                 return unit;
         }
