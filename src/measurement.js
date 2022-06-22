@@ -6,7 +6,7 @@ class Measurement {
         '°C',
         'km',
         'kPa',
-        'km/l(e)'
+        'km/l(e)',
         // Helps with conversion to Gallons. 
         'lit'
     ];
