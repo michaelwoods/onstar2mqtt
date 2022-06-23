@@ -69,6 +69,7 @@ class Measurement {
             case 'km/l(e)':
                 // km/L =  (1.609344 / 3.785411784) * MPG
                 value = _.round(value / (1.609344 / 3.785411784), 1);
+                break;
             case 'lit':
                 value = _.round(value / 3.785411784, 1);
                 break;
