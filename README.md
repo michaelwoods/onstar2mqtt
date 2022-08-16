@@ -16,34 +16,34 @@ Collect the following information:
 
 ### Node.js
 It's a typical node.js application, but I am unfamiliar on how to pass ENV vars, so if someone wants to create a PR to explain how to do that, be my guest. 
-To install and run do the following commands. 
-`sudo wget https://www.github.com/bennydabee/onstar2mqtt
-cd onstar2mqtt
-npm install
-`
-The following is required as I am unfamilar with the ENV vars for NPM. 
-`
-cd src
-sudo nano index.js
-`
-Make the following lines similar to this 
-`deviceId: process.env.ONSTAR_DEVICEID || 'uuidhere',
-vin: process.env.ONSTAR_VIN || 'vinhere',
-username: process.env.ONSTAR_USERNAME 'usernamehere',
-password: process.env.ONSTAR_PASSWORD 'password here',
-onStarPin: process.env.ONSTAR_PIN 'pinhere',
-`
-`
-const mqttConfig = {
-host: process.env.MQTT_HOST || 'haip',
-username: process.env.MQTT_USERNAME || 'mqttusername',
-password: process.env.MQTT_PASSWORD || 'mqttpassword',
-port: parseInt(process.env.MQTT_PORT) || 1883,
-tls: process.env.MQTT_TLS || false,
-prefix: process.env.MQTT_PREFIX || 'homeassistant',
-namePrefix: process.env.MQTT_NAME_PREFIX || '',
-`
-After all this run `cd ..` and then `npm run start` and it should now connect and you will have OnStarJS in your HA MQTT
+To install and run do the following commands.  
+`sudo wget https://www.github.com/bennydabee/onstar2mqtt  
+cd onstar2mqtt  
+npm install  
+`  
+The following is required as I am unfamilar with the ENV vars for NPM.  
+`  
+cd src  
+sudo nano index.js  
+`  
+Make the following lines similar to this  
+`deviceId: process.env.ONSTAR_DEVICEID || 'uuidhere',  
+vin: process.env.ONSTAR_VIN || 'vinhere',  
+username: process.env.ONSTAR_USERNAME 'usernamehere',  
+password: process.env.ONSTAR_PASSWORD 'password here',  
+onStarPin: process.env.ONSTAR_PIN 'pinhere',  
+`  
+`  
+const mqttConfig = {  
+host: process.env.MQTT_HOST || 'haip',  
+username: process.env.MQTT_USERNAME || 'mqttusername',  
+password: process.env.MQTT_PASSWORD || 'mqttpassword',  
+port: parseInt(process.env.MQTT_PORT) || 1883,  
+tls: process.env.MQTT_TLS || false,  
+prefix: process.env.MQTT_PREFIX || 'homeassistant',  
+namePrefix: process.env.MQTT_NAME_PREFIX || '',  
+`  
+After all this run `cd ..` and then `npm run start` and it should now connect and you will have OnStarJS in your HA MQTT  
 
 ### Home Assistant configuration templates
 MQTT auto discovery is enabled. For further integrations and screenshots see [HA-MQTT.md](HA-MQTT.md).
