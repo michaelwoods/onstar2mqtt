@@ -7,14 +7,22 @@ const {Diagnostic} = require('./diagnostic');
 const MQTT = require('./mqtt');
 const Commands = require('./commands');
 const logger = require('./logger');
+const uuid = process.env.npm_config_uuid;
+const vin = process.env.npm_config_vin;
+const osuser = process.env.npm_config_osuser;
+const ospass = process.env.npm_config_ospass;
+const ospin = process.env.npm_config_ospin;
+const haip = process.env.npm_config_haip;
+const mquser = process.env.npm_config_mquser;
+const mqpass = process.env.npm_config_mqpass;
 
 
 const onstarConfig = {
-    deviceId: process.env.ONSTAR_DEVICEID || uuidv4(),
-    vin: process.env.ONSTAR_VIN,
-    username: process.env.ONSTAR_USERNAME,
-    password: process.env.ONSTAR_PASSWORD,
-    onStarPin: process.env.ONSTAR_PIN,
+    deviceId: process.env.ONSTAR_DEVICEID || uuid,
+    vin: process.env.ONSTAR_VIN || vin,
+    username: process.env.ONSTAR_USERNAME || osuser,
+    password: process.env.ONSTAR_PASSWORD || ospass,
+    onStarPin: process.env.ONSTAR_PIN || ospin,
     checkRequestStatus: process.env.ONSTAR_SYNC === "true" || true,
     refreshInterval: parseInt(process.env.ONSTAR_REFRESH) || (30 * 60 * 1000), // 30 min
     allowCommands: _.toLower(_.get(process, 'env.ONSTAR_ALLOW_COMMANDS', 'true')) === 'true'
@@ -22,9 +30,9 @@ const onstarConfig = {
 logger.info('OnStar Config', {onstarConfig});
 
 const mqttConfig = {
-    host: process.env.MQTT_HOST || 'localhost',
-    username: process.env.MQTT_USERNAME,
-    password: process.env.MQTT_PASSWORD,
+    host: process.env.MQTT_HOST || haip,
+    username: process.env.MQTT_USERNAME || mquser,
+    password: process.env.MQTT_PASSWORD || mqpass,
     port: parseInt(process.env.MQTT_PORT) || 1883,
     tls: process.env.MQTT_TLS || false,
     prefix: process.env.MQTT_PREFIX || 'homeassistant',
