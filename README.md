@@ -28,7 +28,8 @@ cd src
 sudo nano index.js  
 ```  
 Make the following lines similar to this  
-```deviceId: process.env.ONSTAR_DEVICEID || 'uuidhere',  
+```   
+deviceId: process.env.ONSTAR_DEVICEID || 'uuidhere',  
 vin: process.env.ONSTAR_VIN || 'vinhere',  
 username: process.env.ONSTAR_USERNAME 'usernamehere',  
 password: process.env.ONSTAR_PASSWORD 'password here',  
