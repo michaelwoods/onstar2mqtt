@@ -1,4 +1,4 @@
-require('dotenv').config({path: '../.env'})
+require('dotenv').config();
 const OnStar = require('onstarjs');
 const mqtt = require('async-mqtt');
 const uuidv4 = require('uuid').v4;
@@ -8,14 +8,14 @@ const {Diagnostic} = require('./diagnostic');
 const MQTT = require('./mqtt');
 const Commands = require('./commands');
 const logger = require('./logger');
-const uuid = process.env.npm_config_uuid;
-const vin = process.env.npm_config_vin;
-const osuser = process.env.npm_config_osuser;
-const ospass = process.env.npm_config_ospass;
-const ospin = process.env.npm_config_ospin;
-const haip = process.env.npm_config_haip;
-const mquser = process.env.npm_config_mquser;
-const mqpass = process.env.npm_config_mqpass;
+const uuid = process.env.uuid;
+const vin = process.env.vin;
+const osuser = process.env.osuser;
+const ospass = process.env.ospass;
+const ospin = process.env.ospin;
+const haip = process.env.haip;
+const mquser = process.env.mquser;
+const mqpass = process.env.mqpass;
 
 
 const onstarConfig = {
