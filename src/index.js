@@ -1,3 +1,4 @@
+require('dotenv').config({path: '../.env'})
 const OnStar = require('onstarjs');
 const mqtt = require('async-mqtt');
 const uuidv4 = require('uuid').v4;
