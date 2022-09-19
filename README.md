@@ -47,6 +47,20 @@ namePrefix: process.env.MQTT_NAME_PREFIX || '',
 ```  
 After all this run `cd ..` and then `npm run start` and it should now connect and you will have OnStarJS in your HA MQTT  
 
+### .ENV
+You need to create an .env file at the root of the files. 
+Once created, you need to fill it with the following. 
+```
+uuid=""
+vin=""
+osuser=""
+ospass=""
+ospin=""
+haip=""
+mquser=""
+mqpass=""
+```
+
 ### Home Assistant configuration templates
 MQTT auto discovery is enabled. For further integrations and screenshots see [HA-MQTT.md](HA-MQTT.md).
 
