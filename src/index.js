@@ -15,6 +15,7 @@ const onstarConfig = {
     username: process.env.ONSTAR_USERNAME,
     password: process.env.ONSTAR_PASSWORD,
     onStarPin: process.env.ONSTAR_PIN,
+    serviceUrl: process.env.ONSTAR_URL || "https://api.gm.com",
     checkRequestStatus: process.env.ONSTAR_SYNC === "true" || true,
     refreshInterval: parseInt(process.env.ONSTAR_REFRESH) || (30 * 60 * 1000), // 30 min
     allowCommands: _.toLower(_.get(process, 'env.ONSTAR_ALLOW_COMMANDS', 'true')) === 'true'
