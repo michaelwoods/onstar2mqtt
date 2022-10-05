@@ -48,10 +48,14 @@ ONSTAR_PASSWORD=
 ONSTAR_PIN=
 MQTT_USERNAME=
 MQTT_PASSWORD=
+
+#For Canadian users, specify the canadian end-point as well:
+ONSTAR_URL=https://api.gm.ca
+
 ```
 ### Node.js
 It's a typical node.js application, define the same environment values as described in the docker sections and run with:
-`npm run start`. Currently, this is only tested with Node.js 12.x.
+`npm run start`. Currently, this is only tested with Node.js 18.x.
 
 ### Home Assistant configuration templates
 MQTT auto discovery is enabled. For further integrations and screenshots see [HA-MQTT.md](HA-MQTT.md).
