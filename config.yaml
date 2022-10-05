@@ -20,6 +20,7 @@ options:
   ONSTAR_USERNAME: ''
   ONSTAR_PASSWORD: '' 
   ONSTAR_PIN: ''
+  ONSTAR_URL: 'https://api.gm.com'
   ONSTAR_REFRESH: 1800000
   MQTT_HOST: ''
   MQTT_USERNAME: ''
@@ -30,6 +31,7 @@ schema:
   ONSTAR_USERNAME: str
   ONSTAR_PASSWORD: password
   ONSTAR_PIN: password
+  ONSTAR_URL: str
   ONSTAR_REFRESH: int
   MQTT_HOST: str
   MQTT_USERNAME: str
