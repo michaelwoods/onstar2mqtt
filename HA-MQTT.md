@@ -1,5 +1,42 @@
 Sample configs for MQTT Home Assistant integration.
 
+### Commands
+
+#### example script yaml:
+```yaml
+alias: Car - Start Vehicle
+sequence:
+  - service: mqtt.publish
+    data:
+      topic: homeassistant/YOUR_CAR_VIN/command
+      payload: '{"command": "startVehicle"}'
+mode: single
+icon: 'mdi:car-electric'
+```
+
+#### Triger precondition via calendar
+````yaml
+alias: Car Precondition
+description: Precondition if group.family is home (ie, at least one person).
+trigger:
+  - platform: state
+    entity_id: calendar.YOUR_CAL_NAME
+    from: 'off'
+    to: 'on'
+condition:
+  - condition: state
+    entity_id: group.family
+    state: home
+  - condition: state
+    entity_id: calendar.YOUR_CAL_NAME
+    state: Bolt Start
+    attribute: message
+action:
+  - service: script.car_start_vehicle
+    data: {}
+mode: single
+````
+
 ### Location
 Unfortunately, the MQTT Device tracker uses a home/not_home state and the MQTT Json device tracker does not support
 the discovery schema so a manual entity configuration is required.
@@ -24,22 +61,6 @@ mode: single
 icon: 'mdi:map-marker'
 ```
 
-### Lovelace Dashboard
-Create a new dashboard, or use the cards in your own view. The `mdi:car-electric` icon works well here.
-
-![lovelace screenshot](images/lovelace.png)
-
-#### script yaml:
-```yaml
-alias: Car - Start Vehicle
-sequence:
-  - service: mqtt.publish
-    data:
-      topic: homeassistant/YOUR_CAR_VIN/command
-      payload: '{"command": "startVehicle"}'
-mode: single
-icon: 'mdi:car-electric'
-```
 #### Commands:
 [OnStarJS Command Docs](https://github.com/samrum/OnStarJS#commands)
 1. `getAccountVehicles`
@@ -52,6 +73,12 @@ icon: 'mdi:car-electric'
 8. `chargeOverride`
 9. `cancelChargeOverride`
 10. `getLocation`
+
+
+### Lovelace Dashboard
+Create a new dashboard, or use the cards in your own view. The `mdi:car-electric` icon works well here.
+
+![lovelace screenshot](images/lovelace.png)
 
 #### dashboard yaml:
 ```yaml
