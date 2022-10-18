@@ -13,7 +13,7 @@ Collect the following information:
 1. MQTT server information: hostname, username, password
     1. If using TLS, define `MQTT_PORT` and `MQTT_TLS=true`
 
-Supply these values to the ENV vars below.
+Supply these values to the ENV vars below. The default data refresh interval is 30 minutes and can be overridden with ONSTAR_REFRESH with values in milliseconds.
 ### [Docker](https://hub.docker.com/r/michaelwoods/onstar2mqtt)
 
 ```shell
