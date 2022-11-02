@@ -35,7 +35,7 @@
     "onstarjs": "^2.3.10",
     "uuid": "^9.0.0",
     "winston": "^3.8.2",
-    "dotenv": "^16.0.1"
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.9",
