@@ -17,8 +17,8 @@ const onstarConfig = {
     onStarPin: process.env.ONSTAR_PIN,
     checkRequestStatus: _.get(process.env, 'ONSTAR_SYNC', 'true') === 'true',
     refreshInterval: parseInt(process.env.ONSTAR_REFRESH) || (30 * 60 * 1000), // 30 min
-    requestPollingIntervalSeconds: parseInt(process.env.ONSTAR_POLL_INTERVAL) || 12, // 6 sec default
-    requestPollingTimeoutSeconds: parseInt(process.env.ONSTAR_POLL_TIMEOUT) || 120, // 60 sec default
+    requestPollingIntervalSeconds: parseInt(process.env.ONSTAR_POLL_INTERVAL) || 6, // 6 sec default
+    requestPollingTimeoutSeconds: parseInt(process.env.ONSTAR_POLL_TIMEOUT) || 60, // 60 sec default
     allowCommands: _.get(process.env, 'ONSTAR_ALLOW_COMMANDS', 'true') === 'true'
 };
 logger.info('OnStar Config', {onstarConfig});
