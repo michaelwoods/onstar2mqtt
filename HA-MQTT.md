@@ -60,6 +60,20 @@ sequence:
 mode: single
 icon: 'mdi:map-marker'
 ```
+### Automation:
+Create an automation to update the location whenever the odometer changes, instead of on a time interval.
+```alias: Update EV Location
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - sensor.odometer_mi
+condition: []
+action:
+  - service: script.locate_bolt_ev
+    data: {}
+mode: single
+```
 
 #### Commands:
 [OnStarJS Command Docs](https://github.com/samrum/OnStarJS#commands)
