@@ -1,6 +1,6 @@
 {
   "name": "onstar2mqtt",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "OnStarJS wrapper for MQTT",
   "main": "src/index.js",
   "scripts": {
@@ -41,7 +41,7 @@
     "@babel/eslint-plugin": "^7.19.1",
     "@babel/plugin-syntax-class-properties": "^7.12.13",
     "@babel/preset-env": "^7.20.2",
-    "eslint": "^8.32.0",
+    "eslint": "^8.33.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
