@@ -1,3 +1,4 @@
+require('dotenv').config();
 const OnStar = require('onstarjs');
 const mqtt = require('async-mqtt');
 const uuidv4 = require('uuid').v4;
@@ -7,14 +8,14 @@ const {Diagnostic} = require('./diagnostic');
 const MQTT = require('./mqtt');
 const Commands = require('./commands');
 const logger = require('./logger');
-const uuid = process.env.npm_config_uuid;
-const vin = process.env.npm_config_vin;
-const osuser = process.env.npm_config_osuser;
-const ospass = process.env.npm_config_ospass;
-const ospin = process.env.npm_config_ospin;
-const haip = process.env.npm_config_haip;
-const mquser = process.env.npm_config_mquser;
-const mqpass = process.env.npm_config_mqpass;
+const uuid = process.env.uuid;
+const vin = process.env.vin;
+const osuser = process.env.osuser;
+const ospass = process.env.ospass;
+const ospin = process.env.ospin;
+const haip = process.env.haip;
+const mquser = process.env.mquser;
+const mqpass = process.env.mqpass;
 
 
 const onstarConfig = {
@@ -25,7 +26,9 @@ const onstarConfig = {
     onStarPin: process.env.ONSTAR_PIN || ospin,
     checkRequestStatus: process.env.ONSTAR_SYNC === "true" || true,
     refreshInterval: parseInt(process.env.ONSTAR_REFRESH) || (30 * 60 * 1000), // 30 min
-    allowCommands: _.toLower(_.get(process, 'env.ONSTAR_ALLOW_COMMANDS', 'true')) === 'true'
+    requestPollingIntervalSeconds: parseInt(process.env.ONSTAR_POLL_INTERVAL) || 6, // 6 sec default
+    requestPollingTimeoutSeconds: parseInt(process.env.ONSTAR_POLL_TIMEOUT) || 60, // 60 sec default
+    allowCommands: _.get(process.env, 'ONSTAR_ALLOW_COMMANDS', 'true') === 'true'
 };
 logger.info('OnStar Config', {onstarConfig});
 
@@ -89,20 +92,23 @@ const configureMQTT = async (commands, client, mqttHA) => {
             return;
         }
         const commandFn = cmd.bind(commands);
-        logger.info('Command sent', {command});
+        logger.info('Command sent', { command });
         commandFn(options || {})
             .then(data => {
                 // TODO refactor the response handling for commands
-                logger.info('Command completed', {command});
-                const location = _.get(data, 'response.data.commandResponse.body.location');
-                if (data && location) {
-                    logger.info('Command response data', {location});
-                    const topic = mqttHA.getStateTopic({name: command});
-                    // TODO create device_tracker entity. MQTT device tracker doesn't support lat/lon and mqtt_json
-                    // doesn't have discovery
-                    client.publish(topic,
-                        JSON.stringify({latitude: location.lat, longitude: location.long}), {retain: true})
-                        .then(() => logger.info('Published location to topic.', {topic}));
+                logger.info('Command completed', { command });
+                const responseData = _.get(data, 'response.data');
+                if (responseData) {
+                    logger.info('Command response data', { responseData });
+                    const location = _.get(data, 'response.data.commandResponse.body.location');
+                    if (location) {
+                        const topic = mqttHA.getStateTopic({ name: command });
+                        // TODO create device_tracker entity. MQTT device tracker doesn't support lat/lon and mqtt_json
+                        // doesn't have discovery
+                        client.publish(topic,
+                            JSON.stringify({ latitude: location.lat, longitude: location.long }), { retain: true })
+                            .then(() => logger.info('Published location to topic.', { topic }));
+                    }
                 }
             })
             .catch(err=> logger.error('Command error', {command, err}));
@@ -177,7 +183,17 @@ const configureMQTT = async (commands, client, mqttHA) => {
 
         const main = async () => run()
             .then(() => logger.info('Updates complete, sleeping.'))
-            .catch(e => logger.error('Error', {error: e}))
+            .catch(e => {
+                if (e instanceof Error) {
+                    logger.error('Error', {error: _.pick(e, [
+                        'message', 'stack',
+                        'response.status', 'response.statusText', 'response.headers', 'response.data',
+                        'request.method', 'request.body', 'request.contentType', 'request.headers', 'request.url'
+                        ])});
+                } else {
+                    logger.error('Error', {error: e});
+                }
+            });
 
         await main();
         setInterval(main, onstarConfig.refreshInterval);
