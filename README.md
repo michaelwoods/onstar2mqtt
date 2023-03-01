@@ -13,7 +13,6 @@ Collect the following information:
 4. MQTT server information: hostname, username, password
     4a. If using TLS, define `MQTT_PORT` and `MQTT_TLS=true`
 
-
 ### Node.js
 It's a typical node.js application, that uses .env variables to run. To install and run, follow the steps bellow. 
 ```  
