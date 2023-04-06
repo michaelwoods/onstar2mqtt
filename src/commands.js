@@ -71,14 +71,26 @@ class Commands {
         return this.onstar.cancelStart();
     }
 
-    async alert({action = [Commands.CONSTANTS.ALERT_ACTION.FLASH],
-                 delay = 0, duration = 1, override = []}) {
-        return this.onstar.alert({
-            action,
-            delay,
-            duration,
-            override
-        });
+    //async alert({action = [Commands.CONSTANTS.ALERT_ACTION.FLASH],
+    //             delay = 0, duration = 1, override = []}) {
+    //    return this.onstar.alert({
+    //        action,
+    //        delay,
+    //        duration,
+    //        override
+    //    });
+    //}
+    
+    async alert() {
+        return this.onstar.alert();  
+    }
+
+    async alertFlash({action = [Commands.CONSTANTS.ALERT_ACTION.FLASH]}) {
+        return this.onstar.alert({action});  
+    }
+    
+    async alertHonk({action = [Commands.CONSTANTS.ALERT_ACTION.HONK]}) {
+        return this.onstar.alert({action});  
     }
 
     async cancelAlert() {
