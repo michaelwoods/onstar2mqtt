@@ -1,5 +1,5 @@
 name: OnStar2MQTT HASS Add-On
-version: latest 
+version: "1.5.5" 
 slug: onstar2mqtt-addon
 description: OnStar data inttegration into Home Assistant via MQTT
 startup: application
