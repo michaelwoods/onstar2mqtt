@@ -7,6 +7,7 @@ class Measurement {
         'km',
         'kPa',
         'km/l(e)',
+        'km/l',
         // Helps with conversion to Gallons. 
         'lit'
     ];
@@ -34,10 +35,14 @@ class Measurement {
                 return 'kPa';
             case 'kmple':
                 return 'km/l(e)';
+            case 'kmpl':
+                return 'km/l';
             case 'volts':
             case 'Volts':
                 return 'V';
             case 'l':
+                return 'lit';
+            case 'L':
                 return 'lit';
             // these are states
             case 'Stat':
@@ -63,10 +68,14 @@ class Measurement {
             case 'km':
                 value = _.round(convert(value).from('km').to('mi'), 1);
                 break;
-            case 'kPa':
+            case 'kPa':                
                 value = _.round(convert(value).from('kPa').to('psi'), 1);
                 break;
             case 'km/l(e)':
+                // km/L =  (1.609344 / 3.785411784) * MPG
+                value = _.round(value / (1.609344 / 3.785411784), 1);
+                break;
+            case 'km/l':
                 // km/L =  (1.609344 / 3.785411784) * MPG
                 value = _.round(value / (1.609344 / 3.785411784), 1);
                 break;
@@ -92,6 +101,8 @@ class Measurement {
                 return 'psi';
             case 'km/l(e)':
                 return 'mpg(e)';
+            case 'km/l':
+                return 'mpg';
             case 'lit':
                 return 'gal';
             default:
