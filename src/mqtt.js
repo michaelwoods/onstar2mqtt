@@ -234,6 +234,7 @@ class MQTT {
             case 'EV PLUG STATE': // unplugged/plugged
                 return this.mapBinarySensorConfigPayload(diag, diagEl, 'plug');
             case 'EV CHARGE STATE': // not_charging/charging
+            case 'EV ESTIMATED CHARGE END'
                 return this.mapBinarySensorConfigPayload(diag, diagEl, 'battery_charging');
             // binary_sensor, but no applicable device_class
             case 'PRIORITY CHARGE INDICATOR': // FALSE/TRUE
