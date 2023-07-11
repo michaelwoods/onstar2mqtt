@@ -34,7 +34,7 @@
     "lodash": "^4.17.21",
     "onstarjs": "^2.3.22",
     "uuid": "^9.0.0",
-    "winston": "^3.8.2"
+    "winston": "^3.9.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.21.3",
