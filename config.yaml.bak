@@ -1,0 +1,45 @@
+name: OnStar2MQTT HASS Add-On
+version: latest 
+slug: onstar2mqtt-addon
+description: OnStar data inttegration into Home Assistant via MQTT
+startup: application
+boot: auto
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+url: 'https://github.com/dannysporea/onstar2mqtt-addon'
+#image: 'michaelwoods/onstar2mqtt'
+services:
+  - 'mqtt:need'
+init: false
+#environment:
+#  ONSTAR_DEVICEID: '3388af5b-1e5b-4423-9980-f6c0b9017149'
+#  ONSTAR_VIN: '1G1FZ6S08N4121139'
+#  ONSTAR_USERNAME: 'dannysporea@yahoo.com'
+#  ONSTAR_PASSWORD: 'TaDanSp15'
+#  ONSTAR_PIN: '1429'
+#  MQTT_HOST: '192.168.1.3' 
+#  MQTT_USERNAME: 'mqttuser' 
+#  MQTT_PASSWORD: 'mqttpass123'
+options:
+  ONSTAR_DEVICEID: ''
+  ONSTAR_VIN: ''
+  ONSTAR_USERNAME: ''
+  ONSTAR_PASSWORD: '' 
+  ONSTAR_PIN: ''
+  ONSTAR_REFRESH: 1800000
+  MQTT_HOST: ''
+  MQTT_USERNAME: ''
+  MQTT_PASSWORD: '' 
+schema:
+  ONSTAR_DEVICEID: str
+  ONSTAR_VIN: str
+  ONSTAR_USERNAME: str
+  ONSTAR_PASSWORD: password
+  ONSTAR_PIN: password
+  ONSTAR_REFRESH: int
+  MQTT_HOST: str
+  MQTT_USERNAME: str
+  MQTT_PASSWORD: password
