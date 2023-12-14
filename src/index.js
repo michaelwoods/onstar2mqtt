@@ -70,35 +70,94 @@ const connectMQTT = async availabilityTopic => {
     return client;
 }
 
-const configureMQTT = async (commands, client, mqttHA) => {
+const configureMQTT = async (vehicle, commands, client, mqttHA) => {
     if (!onstarConfig.allowCommands)
         return;
+    const availTopic = mqttHA.getAvailabilityTopic();
+    const configurations = new Map();
 
     client.on('message', (topic, message) => {
         logger.debug('Subscription message', {topic, message});
-        const {command, options} = JSON.parse(message);
+        var {command, options} = JSON.parse(message);
         const cmd = commands[command];
         if (!cmd) {
             logger.error('Command not found', {command});
             return;
         }
         const commandFn = cmd.bind(commands);
+        // special case:  if a "diagnostics" command is used and no options are specified, default to all supported diagnostic items
+        if ((command == 'diagnostics') && !options) {
+            options = { diagnosticItem: vehicle.getSupported() };
+        }
+
         logger.info('Command sent', { command });
         commandFn(options || {})
             .then(data => {
-                // TODO refactor the response handling for commands
+                // TODONE refactor the response handling for commands
                 logger.info('Command completed', { command });
                 const responseData = _.get(data, 'response.data');
                 if (responseData) {
-                    logger.info('Command response data', { responseData });
                     const location = _.get(data, 'response.data.commandResponse.body.location');
+                    const diag = _.get(data, 'response.data.commandResponse.body.diagnosticResponse');
                     if (location) {
                         const topic = mqttHA.getStateTopic({ name: command });
+                        logger.info('got location response');
                         // TODO create device_tracker entity. MQTT device tracker doesn't support lat/lon and mqtt_json
                         // doesn't have discovery
                         client.publish(topic,
                             JSON.stringify({ latitude: location.lat, longitude: location.long }), { retain: true })
                             .then(() => logger.info('Published location to topic.', { topic }));
+                    }
+                    else if (diag) {
+                        const states = new Map();
+                        const v = vehicle;
+
+                        logger.info('got diagnostic response');
+                        const stats = _.map(diag, d => new Diagnostic(d));
+                        logger.debug('Diagnostic request response', {stats: _.map(stats, s => s.toString())});
+                        for (const s of stats) {
+                            if (!s.hasElements()) {
+                                continue;
+                            }
+                            // configure once, then set or update states
+                            for (const d of s.diagnosticElements) {
+                                const topic = mqttHA.getConfigTopic(d)
+                                const payload = mqttHA.getConfigPayload(s, d);
+                                configurations.set(topic, {configured: false, payload});
+                            }
+                            const topic = mqttHA.getStateTopic(s);
+                            const payload = mqttHA.getStatePayload(s);
+                            states.set(topic, payload);
+                        }
+
+                        const publishes = [];
+                        // publish sensor configs
+                        for (let [topic, config] of configurations) {
+                            // configure once
+                            if (!config.configured) {
+                                config.configured = true;
+                                const {payload} = config;
+                                logger.debug('Publishing message', {topic, payload});
+                                publishes.push(
+                                    client.publish(topic, JSON.stringify(payload), {retain: true})
+                                );
+                            }
+                        }
+
+                        // update sensor states
+                        for (let [topic, state] of states) {
+                            logger.info('Publishing message', {topic, state});
+                            publishes.push(
+                                client.publish(topic, JSON.stringify(state), {retain: true})
+                            );
+                        }
+                        Promise.all(publishes);
+                    }
+                    else {
+                        // unknown response, but log it and send it in a state publication in case the user wants to parse it.
+                        logger.info('got unknown response: ', { responseData });
+                        const topic = mqttHA.getStateTopic({ name: command });
+                        client.publish(topic, JSON.stringify(responseData), {retain: false});
                     }
                 }
             })
@@ -119,57 +178,15 @@ const configureMQTT = async (commands, client, mqttHA) => {
         const client = await connectMQTT(availTopic);
         client.publish(availTopic, 'true', {retain: true})
             .then(() => logger.debug('Published availability'));
-        await configureMQTT(commands, client, mqttHA);
+        await configureMQTT(vehicle, commands, client, mqttHA);
 
         const configurations = new Map();
         const run = async () => {
             const states = new Map();
             const v = vehicle;
             logger.info('Requesting diagnostics');
-            const statsRes = await commands.diagnostics({diagnosticItem: v.getSupported()});
-            logger.info('Diagnostic request status', {status: _.get(statsRes, 'status')});
-            const stats = _.map(
-                _.get(statsRes, 'response.data.commandResponse.body.diagnosticResponse'),
-                d => new Diagnostic(d)
-            );
-            logger.debug('Diagnostic request response', {stats: _.map(stats, s => s.toString())});
-
-            for (const s of stats) {
-                if (!s.hasElements()) {
-                    continue;
-                }
-                // configure once, then set or update states
-                for (const d of s.diagnosticElements) {
-                    const topic = mqttHA.getConfigTopic(d)
-                    const payload = mqttHA.getConfigPayload(s, d);
-                    configurations.set(topic, {configured: false, payload});
-                }
-
-                const topic = mqttHA.getStateTopic(s);
-                const payload = mqttHA.getStatePayload(s);
-                states.set(topic, payload);
-            }
-            const publishes = [];
-            // publish sensor configs
-            for (let [topic, config] of configurations) {
-                // configure once
-                if (!config.configured) {
-                    config.configured = true;
-                    const {payload} = config;
-                    logger.info('Publishing message', {topic, payload});
-                    publishes.push(
-                        client.publish(topic, JSON.stringify(payload), {retain: true})
-                    );
-                }
-            }
-            // update sensor states
-            for (let [topic, state] of states) {
-                logger.info('Publishing message', {topic, state});
-                publishes.push(
-                    client.publish(topic, JSON.stringify(state), {retain: true})
-                );
-            }
-            await Promise.all(publishes);
+            //client.publish(mqttHA.getCommandTopic(),  JSON.stringify({command : 'diagnostics', options: { diagnosticItem: v.getSupported() }}));
+            client.publish(mqttHA.getCommandTopic(),  JSON.stringify({command : 'diagnostics'}));
         };
 
         const main = async () => run()
