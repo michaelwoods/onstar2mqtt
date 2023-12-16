@@ -82,10 +82,15 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
     client.publish(mqttHA.getConfigTopic({ name: "getLocation" }), 
         JSON.stringify(mqttHA.getConfigPayload( {name: "getLocation"}, null)), {retain: true});
 
-    // TODO: publish for any buttons (start, cancelstart, lock, unlock, etc, etc)
+    // TODO: publish autodiscovery for any buttons (start, cancelstart, lock, unlock, etc, etc)
+    //   (or maybe as switches?  no - because there's no way to query the current state.  The code
+    //   knows when a "start" command works, but doesn't know when the car turns itself back off.
 
-
-    // TODO: ideally, would publish for all the possible diagnostics...  (this will require a ton of work in mqtt.js)
+    // Ideally, would publish the autodiscovery topics for all the diagnostics here....
+    //  HOWEVER, until I see a diagnostics response, I don't know what topics to create!  I can figure out
+    //  what diagnosticItems the vehicle supports, but there's no 1:1 relationship between that and the stuff that
+    //  the mqtt.js creates from the returned JSON.  Therefore, leave that diagnostics discovery topic stuff
+    //  alone.
 
     // get the mqtt client listening for messages...
     client.on('message', (topic, message) => {
@@ -134,7 +139,12 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                                 for (const d of s.diagnosticElements) {
                                     const topic = mqttHA.getConfigTopic(d)
                                     const payload = mqttHA.getConfigPayload(s, d);
-                                    configurations.set(topic, {configured: false, payload});
+                                    // this resets "configured" and the payload every single time a diag response comes back!!!
+                                    // configurations.set(topic, {configured: false, payload});
+                                    
+                                    // this, however, will only set if it doesn't exist yet, and therefore leave 'configured' unchanged
+                                    if (!configurations.has(topic))
+                                        configurations.set(topic, {configured: false, payload});
                                 }
                                 const topic = mqttHA.getStateTopic(s);
                                 const payload = mqttHA.getStatePayload(s);
@@ -148,7 +158,7 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                                 if (!config.configured) {
                                     config.configured = true;
                                     const {payload} = config;
-    //                                logger.debug('Publishing message', {topic, payload});
+                                    logger.debug('Publishing discovery topic: ', {topic});
                                     publishes.push(
                                         client.publish(topic, JSON.stringify(payload), {retain: true})
                                     );
