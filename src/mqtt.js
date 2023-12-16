@@ -177,6 +177,34 @@ class MQTT {
         };
     }
 
+    mapDeviceTrackerConfigPayload(_name) {
+        // the end result should be something like:
+        //  {"json_attributes_topic":"homeassistant/device_tracker/VIN/getlocation/state", 
+        //    "name":"????", 
+        //    "device": (the device attrib thing), 
+        //    "availability_topic":???, 
+        //    "unique_id":"..." }
+        var name = "Vehicle Location";
+        name = this.addNamePrefix(name);
+        // Generate the unique id from the vin and name
+        let unique_id = `${this.vehicle.vin}-${_name}`
+        unique_id = unique_id.replace(/\s+/g, '-').toLowerCase();
+        return {
+            name,
+            device: {
+                identifiers: [this.vehicle.vin],
+                manufacturer: this.vehicle.make,
+                model: this.vehicle.year,
+                name: this.vehicle.toString()
+            },
+            availability_topic: this.getAvailabilityTopic(),
+            payload_available: 'true',
+            payload_not_available: 'false',
+            json_attributes_topic: this.getStateTopic({name: _name}),
+            unique_id: unique_id
+        };
+    }
+
     mapSensorConfigPayload(diag, diagEl, device_class, name, attr) {
         name = name || MQTT.convertFriendlyName(diagEl.name);
         return _.extend(
@@ -198,6 +226,11 @@ class MQTT {
      */
     getConfigMapping(diag, diagEl) {
         // TODO: this sucks, find a better way to map these diagnostics and their elements for discovery.
+        // this is a hack.. a really ugly hack
+        if (diag.name === "getLocation") {
+            return this.mapDeviceTrackerConfigPayload(diag.name);
+        }
+
         switch (diagEl.name) {
             case 'LIFETIME ENERGY USED':
             case 'LIFETIME EFFICIENCY':
