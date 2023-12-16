@@ -86,6 +86,11 @@ class MQTT {
         return `${this.prefix}/${this.instance}/available`;
     }
 
+    // Add an additional availability topic for just diagnostics
+    getDiagnosticAvailabilityTopic() {
+        return `${this.prefix}/${this.instance}/diagsavailable`;
+    }
+
     getCommandTopic() {
         return `${this.prefix}/${this.instance}/command`;
     }
@@ -151,6 +156,8 @@ class MQTT {
         return state;
     }
 
+    // this is really only usable by diagnostics data... If that changes, note
+    // that there's a diagnostic specific availability topic in here...
     mapBaseConfigPayload(diag, diagEl, device_class, name, attr) {
         name = name || MQTT.convertFriendlyName(diagEl.name);
         name = this.addNamePrefix(name);
@@ -166,7 +173,18 @@ class MQTT {
                 model: this.vehicle.year,
                 name: this.vehicle.toString()
             },
-            availability_topic: this.getAvailabilityTopic(),
+            availability : [ 
+                {
+                    payload_available : 'true',
+                    payload_not_available : 'false',
+                    topic : this.getAvailabilityTopic()
+                },
+                {
+                    payload_available : 'true',
+                    payload_not_available : 'false',
+                    topic : this.getDiagnosticAvailabilityTopic()
+                }
+            ],
             payload_available: 'true',
             payload_not_available: 'false',
             state_topic: this.getStateTopic(diag),

@@ -75,7 +75,7 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
 
     if (!onstarConfig.allowCommands)
         return;
-    const availTopic = mqttHA.getAvailabilityTopic();
+    const diagavailTopic = mqttHA.getDiagnosticAvailabilityTopic();
     const configurations = new Map();
 
     // publish an HA auto discovery topic for the device_tracker
@@ -124,6 +124,13 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
 
                     case 'diagnostics': 
                         {
+                            const publishes = [];
+                            // mark diagnostics as available
+                            publishes.push(
+                                client.publish(diagavailTopic, 'true', {retain: true})
+                            );
+
+                
                             const diag = _.get(data, 'response.data.commandResponse.body.diagnosticResponse');
                             const states = new Map();
                             const v = vehicle;
@@ -151,7 +158,6 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                                 states.set(topic, payload);
                             }
 
-                            const publishes = [];
                             // publish sensor configs
                             for (let [topic, config] of configurations) {
                                 // configure once
@@ -208,6 +214,8 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                     // publish that the command failed.
                     client.publish(mqttHA.getStateTopic({ name: command }), "failure", {retain: false});
                     // in addition, if this was a diagnostics command, mark all the diagnostic entities as unavailable...
+                    if (command == "diagnostics")
+                        client.publish(diagavailTopic, 'false', {retain: true})
                 } else {
                     logger.error('Error', {error: err});
                 }
