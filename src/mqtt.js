@@ -104,6 +104,14 @@ class MQTT {
         return `${this.getBaseTopic(sensorType)}/${MQTT.convertName(diag.name)}/config`;
     }
 
+    getButtonConfig(cmd) {        
+        return [`${this.getBaseTopic('button')}/${MQTT.convertName(cmd)}/config`, this.mapButtonConfigPayload(cmd) ];
+        // return [ `${this.getBaseTopic('button')}/${MQTT.convertName(cmd)}/config`, `${this.getBaseTopic('event')}/${MQTT.convertName(cmd + '_result')}/config` ]
+        // ie: [ 'homeassistant/button/VIN/startvehicle/config' , 'homeassistant/event/VIN/startvehicle_result/config' ]
+    }
+    getEventConfig(cmd) {
+        return [`${this.getBaseTopic('event')}/${MQTT.convertName(cmd)}/config`, this.mapEventConfigPayload(cmd) ];
+    }
     /**
      *
      * @param {Diagnostic} diag
@@ -111,6 +119,9 @@ class MQTT {
     getStateTopic(diag) {
         let sensorType = MQTT.determineSensorType(diag.name);
         return `${this.getBaseTopic(sensorType)}/${MQTT.convertName(diag.name)}/state`;
+    }
+    getEventStateTopic(_name) {
+        return `${this.getBaseTopic('event')}/${MQTT.convertName(_name)}/state`;
     }
 
     /**
@@ -192,6 +203,52 @@ class MQTT {
             json_attributes_topic: _.isUndefined(attr) ? undefined : this.getStateTopic(diag),
             json_attributes_template: attr,
             unique_id: unique_id
+        };
+    }
+    mapEventConfigPayload(_name) {
+        const name = this.addNamePrefix(_name);
+        // Generate the unique id from the vin and name
+        let unique_id = `${this.vehicle.vin}-${_name}`
+        unique_id = unique_id.replace(/\s+/g, '-').toLowerCase();
+        return {
+            name,
+            device: {
+                identifiers: [this.vehicle.vin],
+                manufacturer: this.vehicle.make,
+                model: this.vehicle.year,
+                name: this.vehicle.toString()
+            },
+            availability_topic: this.getAvailabilityTopic(),
+            payload_available: 'true',
+            payload_not_available: 'false',
+            unique_id: unique_id,
+            retain: false,
+            state_topic: this.getEventStateTopic(_name),
+            event_types: [ "success", "failure" ]
+        };
+    }
+
+
+    mapButtonConfigPayload(_name) {
+        const name = this.addNamePrefix(_name);
+        // Generate the unique id from the vin and name
+        let unique_id = `${this.vehicle.vin}-${_name}`
+        unique_id = unique_id.replace(/\s+/g, '-').toLowerCase();
+        return {
+            name,
+            device: {
+                identifiers: [this.vehicle.vin],
+                manufacturer: this.vehicle.make,
+                model: this.vehicle.year,
+                name: this.vehicle.toString()
+            },
+            availability_topic: this.getAvailabilityTopic(),
+            payload_available: 'true',
+            payload_not_available: 'false',
+            unique_id: unique_id,
+            retain: false,
+            command_topic: this.getCommandTopic(), // this uses the generic command topic
+            payload_press: `{ "command": "${_name}" }`
         };
     }
 

@@ -7,8 +7,6 @@ const {Diagnostic} = require('./diagnostic');
 const MQTT = require('./mqtt');
 const Commands = require('./commands');
 const logger = require('./logger');
-const { log } = require('winston');
-
 
 const onstarConfig = {
     deviceId: process.env.ONSTAR_DEVICEID || uuidv4(),
@@ -82,9 +80,78 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
     client.publish(mqttHA.getConfigTopic({ name: "getLocation" }), 
         JSON.stringify(mqttHA.getConfigPayload( {name: "getLocation"}, null)), {retain: true});
 
-    // TODO: publish autodiscovery for any buttons (start, cancelstart, lock, unlock, etc, etc)
-    //   (or maybe as switches?  no - because there's no way to query the current state.  The code
-    //   knows when a "start" command works, but doesn't know when the car turns itself back off.
+
+    // Concept:  other than "getLocation" and "diagnostics", the other commands could be considered
+    //  buttons (and published as such to MQTT/HA.)  Then, the RESPONSE to the button presses 
+    //  could be published as MQTT events.  
+    //
+    //      So, publish an MQTT button called "startVehicle" that has a config including:
+    //          - button:
+    //              command_topic: "homeassistant/VIN/command"  <-- use the generic command topic to KISS
+    //              payload_press: "{ 'command' : 'startVehicle' }"
+    //              retain: false
+    //
+    //      Then, so the user can check to see if the car was actually started:
+    //          - event:
+    //              state_topic: "homeassistant/VIN/events/startvehicle"  // note all lowercase
+    //              event_types:
+    //                  - "success"
+    //                  - "failure"
+    //              // something else for attributes so specific err info can be copied
+    //
+    //      Why not use a switch?  Because buttons/events better represent the paradigm presented
+    //      by onstar.  A switch is a state that can be monitored, but onstar doesn't allow us
+    //      to check if the car is currently running to turn off the "startVehicle" switch. We can
+    //      only send the command (button) and see the immediate response (event.)
+    //
+    //      The buttons and events will have to have similar, but different, names.  For example,
+    //      the button would be startVehicle and the event would be startVehicle-result. (I'm not 
+    //      thrilled with that. Can an autodiscovery config topic have payloads for different 
+    //      types of entities?  The state topics would absolutely have to be different... and that
+    //      would really break the paradigm in mqtt.js.)
+    //
+    //      ... and it turns out that MQTT-events are broken.  That's fine.  To keep things easier
+    //      for automations, just use a single "command_result" event.  Within that event, stuff
+    //      all kinds of data, including the command sent, the success/failure state, a timestamp,
+    //      a friendly name, and even a friendly message that can be directly copied to a notification.    
+
+    const buttonCommands = [ 
+        { cmd: 'startVehicle', friendlyName: "Start", icon: "mdi:car-key" }, 
+        { cmd: 'cancelStartVehicle', friendlyName: "Cancel Start", icon: "mdi:car-off" }, 
+        { cmd: 'alert', friendlyName: "Flash Lights and Honk Horn", icon: "mdi:alarm-light" }, 
+        { cmd: 'alertFlash', friendlyName: "Flash Lights", icon: "mdi:alarm-light" }, 
+        { cmd: 'alertHonk', friendlyName: "Honk Horn", icon: "mdi:alarm-light" }, 
+        { cmd: 'lockDoor', friendlyName: "Lock Doors", icon: "mdi:car-door-lock" }, 
+        { cmd: 'unlockDoor', friendlyName: "Unlock Doors", icon: "mdi:car-door" }, 
+        { cmd: 'getLocation', friendlyName: "Get Location", icon: "mdi:map-marker", noevent: true }
+    ];
+
+    // map it to an array of objects to make things easier
+
+    const button_discovery = [];
+    buttonCommands.forEach(cmd => {
+        const [ ctopic, cpayload ] = mqttHA.getButtonConfig(cmd.cmd);
+        if (cmd.icon)
+            cpayload.icon = cmd.icon;
+        if (cmd.friendlyName)
+            cpayload.name = MQTT.convertFriendlyName(cpayload.name);
+
+        logger.info('topic: ' + ctopic);
+        logger.info('payload: ' + JSON.stringify(cpayload));
+        button_discovery.push(
+            client.publish(ctopic, JSON.stringify(cpayload), {retain: true})
+        );
+        // just publish a single comment event and stick all the results in there
+        const [ etopic, epayload ] = mqttHA.getEventConfig('command_result');
+        button_discovery.push(
+            client.publish(etopic, JSON.stringify(epayload), {retain: true}));
+        
+        Promise.all(button_discovery);
+    });
+    
+
+    // TODO: publish autodiscovery for a "number" representing the timer used for auto-polling
+    //   diagnostics.  (This will have to subscribe to the message as well as publish to it.)
 
     // Ideally, would publish the autodiscovery topics for all the diagnostics here....
     //  HOWEVER, until I see a diagnostics response, I don't know what topics to create!  I can figure out
@@ -101,6 +168,9 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
             logger.error('Command not found', {command});
             return;
         }
+        const cmdObj = buttonCommands.find(( c ) => c.cmd === command);
+        const cmdFriendlyName = (cmdObj && cmdObj.friendlyName) ? cmdObj.friendlyName : command;
+
         const commandFn = cmd.bind(commands);
         // special case:  if a "diagnostics" command is used and no options are specified, default to all supported diagnostic items
         if ((command == 'diagnostics') && !options) {
@@ -113,10 +183,9 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                 // TODONE refactor the response handling for commands
                 logger.info('Command completed', { command });
                 logger.debug(`Status: ${data.status}, response: ` + JSON.stringify(data.response.data));
-                const responseData = _.get(data, 'response.data'); 
+                const location = _.get(data, 'response.data.commandResponse.body.location');
                 switch (command) {
                     case 'getLocation': 
-                        const location = _.get(data, 'response.data.commandResponse.body.location');
                         client.publish(mqttHA.getStateTopic({ name: command }),
                             JSON.stringify({ latitude: Number(location.lat), longitude: Number(location.long) }), { retain: true })
                             .then(() => logger.info('Published device_tracker topic.'));
@@ -133,7 +202,6 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                 
                             const diag = _.get(data, 'response.data.commandResponse.body.diagnosticResponse');
                             const states = new Map();
-                            const v = vehicle;
 
                             logger.info('got diagnostic response');
                             const stats = _.map(diag, d => new Diagnostic(d));
@@ -194,14 +262,18 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                         //  alert/cancelAlert - null body
                         
                         // So, the only thing that might have a useful response is getChargingProfile.
-                        // Now, the question is... how do I get the response back to the user?  For now, just publish a 
-                        // sensor topic (ie: /homeassistant/vin/sensor/cancelalert) with a payload of either the word "success" or
-                        // any useful information.
-                        client.publish(mqttHA.getStateTopic({ name: command }), 
-                            (command == "getChargingProfile") 
-                                ?  JSON.stringify(_.get(data, 'response.data.commandResponse.body')) 
-                                : "success", 
-                            {retain: false});
+                        // Build up a single "command_result" event with anything the user might want in
+                        // the payload.  The "event_type" is required for MQTT events (even if they are
+                        // broken at the moment, assume they might work some day.)
+                        var resultEvent = { event_type: "success", 
+                            friendlyName : cmdFriendlyName, 
+                            command, 
+                            timestamp : new Date(Date.now()).toISOString(),
+                            friendlyMessage : `The "${cmdFriendlyName}" command was successful.` 
+                        };
+                        if (command == "getChargingProfile") 
+                            resultEvent.response = _.get(data, 'response.data.commandResponse.body');                        
+                        client.publish(mqttHA.getEventStateTopic('command_result'), JSON.stringify(resultEvent), {retain: false});
                 } // switch
             })
             .catch(err => {
@@ -211,8 +283,16 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                         'response.status', 'response.statusText', 'response.headers', 'response.data',
                         'request.method', 'request.body', 'request.contentType', 'request.headers', 'request.url'
                         ])});
-                    // publish that the command failed.
-                    client.publish(mqttHA.getStateTopic({ name: command }), "failure", {retain: false});
+                    // see commands above on the contents of resultEvent.
+                    // publish that the command failed. 
+                    const topic = mqttHA.getEventStateTopic('command_result');
+                    var resultEvent = { event_type: "failure", 
+                        friendlyName : cmdFriendlyName, 
+                        command, 
+                        timestamp : new Date(Date.now()).toISOString(),
+                        friendlyMessage : `The "${cmdFriendlyName}" command failed.` 
+                    };
+                    client.publish(topic, JSON.stringify(resultEvent), {retain: false});
                     // in addition, if this was a diagnostics command, mark all the diagnostic entities as unavailable...
                     if (command == "diagnostics")
                         client.publish(diagavailTopic, 'false', {retain: true})
@@ -240,10 +320,7 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
         
         await configureMQTT(vehicle, commands, client, mqttHA);
 
-        const configurations = new Map();
         const run = async () => {
-            const states = new Map();
-            const v = vehicle;
             logger.info('Requesting diagnostics');
             client.publish(mqttHA.getCommandTopic(),  JSON.stringify({command : 'diagnostics'}));
         };
