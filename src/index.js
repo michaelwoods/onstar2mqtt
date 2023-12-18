@@ -128,7 +128,6 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
 
     // map it to an array of objects to make things easier
 
-    const button_discovery = [];
     buttonCommands.forEach(cmd => {
         const [ ctopic, cpayload ] = mqttHA.getButtonConfig(cmd.cmd);
         if (cmd.icon)
@@ -138,15 +137,12 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
 
         logger.info('topic: ' + ctopic);
         logger.info('payload: ' + JSON.stringify(cpayload));
-        button_discovery.push(
-            client.publish(ctopic, JSON.stringify(cpayload), {retain: true})
-        );
+        client.publish(ctopic, JSON.stringify(cpayload), {retain: true});
+
         // just publish a single comment event and stick all the results in there
         const [ etopic, epayload ] = mqttHA.getEventConfig('command_result');
-        button_discovery.push(
-            client.publish(etopic, JSON.stringify(epayload), {retain: true}));
+        client.publish(etopic, JSON.stringify(epayload), {retain: true});
         
-        Promise.all(button_discovery);
     });
     
 
@@ -161,7 +157,7 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
 
     // get the mqtt client listening for messages...
     client.on('message', (topic, message) => {
-        logger.debug('Subscription message', {topic, message});
+        logger.debug('Incoming subscription message', {topic, message});
         var {command, options} = JSON.parse(message);
         const cmd = commands[command];
         if (!cmd) {
@@ -177,35 +173,29 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
             options = { diagnosticItem: vehicle.getSupported() };
         }
 
-        logger.info('Command sent', { command });
+        logger.info('Sending command request to onstar: ', { command });
         commandFn(options || {}) // this will always throw a RequestError on failure, so "success" can be assumed outside the catch block
             .then(data => {
-                // TODONE refactor the response handling for commands
-                logger.info('Command completed', { command });
+                logger.info('onstart completed successfully: ', { command });
                 logger.debug(`Status: ${data.status}, response: ` + JSON.stringify(data.response.data));
-                const location = _.get(data, 'response.data.commandResponse.body.location');
                 switch (command) {
                     case 'getLocation': 
-                        client.publish(mqttHA.getStateTopic({ name: command }),
+                        {
+                            const location = _.get(data, 'response.data.commandResponse.body.location');
+                            client.publish(mqttHA.getStateTopic({ name: command }),
                             JSON.stringify({ latitude: Number(location.lat), longitude: Number(location.long) }), { retain: true })
                             .then(() => logger.info('Published device_tracker topic.'));
+                        }
                         break;
 
                     case 'diagnostics': 
                         {
-                            const publishes = [];
                             // mark diagnostics as available
-                            publishes.push(
-                                client.publish(diagavailTopic, 'true', {retain: true})
-                            );
-
-                
+                            client.publish(diagavailTopic, 'true', {retain: true});
                             const diag = _.get(data, 'response.data.commandResponse.body.diagnosticResponse');
                             const states = new Map();
 
-                            logger.info('got diagnostic response');
                             const stats = _.map(diag, d => new Diagnostic(d));
-                            logger.debug('Diagnostic request response', {stats: _.map(stats, s => s.toString())});
                             for (const s of stats) {
                                 if (!s.hasElements()) {
                                     continue;
@@ -233,20 +223,15 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                                     config.configured = true;
                                     const {payload} = config;
                                     logger.debug('Publishing discovery topic: ', {topic});
-                                    publishes.push(
-                                        client.publish(topic, JSON.stringify(payload), {retain: true})
-                                    );
+                                    client.publish(topic, JSON.stringify(payload), {retain: true});
                                 }
                             }
 
                             // update sensor states
                             for (let [topic, state] of states) {
                                 logger.info('Publishing message', {topic, state});
-                                publishes.push(
-                                    client.publish(topic, JSON.stringify(state), {retain: true})
-                                );
+                                    client.publish(topic, JSON.stringify(state), {retain: true});
                             }
-                            Promise.all(publishes);
                         }
                         break;
 
@@ -292,10 +277,11 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
                         timestamp : new Date(Date.now()).toISOString(),
                         friendlyMessage : `The "${cmdFriendlyName}" command failed.` 
                     };
-                    client.publish(topic, JSON.stringify(resultEvent), {retain: false});
                     // in addition, if this was a diagnostics command, mark all the diagnostic entities as unavailable...
                     if (command == "diagnostics")
                         client.publish(diagavailTopic, 'false', {retain: true})
+                    else
+                        client.publish(topic, JSON.stringify(resultEvent), {retain: false});
                 } else {
                     logger.error('Error', {error: err});
                 }
@@ -326,7 +312,7 @@ const configureMQTT = async (vehicle, commands, client, mqttHA) => {
         };
 
         const main = async () => run()
-            .then(() => logger.info('Updates complete, sleeping.'))
+            .then(() => logger.info(`Updates requested, sleeping for ${onstarConfig.refreshInterval / 60000} minutes.`))
             .catch(e => {
                 if (e instanceof Error) {
                     logger.error('Error', {error: _.pick(e, [
