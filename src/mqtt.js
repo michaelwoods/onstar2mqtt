@@ -210,7 +210,7 @@ class MQTT {
                 value_template: `{{ value_json.${MQTT.convertName(diagEl.name)} }}`,
                 json_attributes_topic: _.isUndefined(attr) ? undefined : this.getStateTopic(diag),
                 json_attributes_template: attr,
-            }, mapBaseConfigPayload(name));
+            }, this.mapBaseConfigPayload(name));
     }
 
     mapEventConfigPayload(_name) {
@@ -239,7 +239,7 @@ class MQTT {
 
     mapDeviceTrackerConfigPayload(_name) {
 
-        let retVal = _extend(
+        let retVal = _.extend(
             {
                 availability_topic: this.getAvailabilityTopic(),
                 payload_available: 'true',
