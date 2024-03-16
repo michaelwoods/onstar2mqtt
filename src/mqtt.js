@@ -86,6 +86,11 @@ class MQTT {
         return `${this.prefix}/${this.instance}/available`;
     }
 
+    // Add an additional availability topic for just diagnostics
+    getDiagnosticAvailabilityTopic() {
+        return `${this.prefix}/${this.instance}/diagsavailable`;
+    }
+
     getCommandTopic() {
         return `${this.prefix}/${this.instance}/command`;
     }
@@ -99,6 +104,14 @@ class MQTT {
         return `${this.getBaseTopic(sensorType)}/${MQTT.convertName(diag.name)}/config`;
     }
 
+    getButtonConfig(cmd) {        
+        return [`${this.getBaseTopic('button')}/${MQTT.convertName(cmd)}/config`, this.mapButtonConfigPayload(cmd) ];
+        // return [ `${this.getBaseTopic('button')}/${MQTT.convertName(cmd)}/config`, `${this.getBaseTopic('event')}/${MQTT.convertName(cmd + '_result')}/config` ]
+        // ie: [ 'homeassistant/button/VIN/startvehicle/config' , 'homeassistant/event/VIN/startvehicle_result/config' ]
+    }
+    getEventConfig(cmd) {
+        return [`${this.getBaseTopic('event')}/${MQTT.convertName(cmd)}/config`, this.mapEventConfigPayload(cmd) ];
+    }
     /**
      *
      * @param {Diagnostic} diag
@@ -106,6 +119,9 @@ class MQTT {
     getStateTopic(diag) {
         let sensorType = MQTT.determineSensorType(diag.name);
         return `${this.getBaseTopic(sensorType)}/${MQTT.convertName(diag.name)}/state`;
+    }
+    getEventStateTopic(_name) {
+        return `${this.getBaseTopic('event')}/${MQTT.convertName(_name)}/state`;
     }
 
     /**
@@ -151,43 +167,103 @@ class MQTT {
         return state;
     }
 
-    mapBaseConfigPayload(diag, diagEl, device_class, name, attr) {
-        name = name || MQTT.convertFriendlyName(diagEl.name);
+    // a truer "base" config payload that works for buttons, events, sensors, etc
+    // (anything that might vary between devices shouldn't be in here)  This takes care
+    // of name, unique_id, and device elements
+    mapBaseConfigPayload(name) {        
         name = this.addNamePrefix(name);
-        // Generate the unique id from the vin and name
-        let unique_id = `${this.vehicle.vin}-${diagEl.name}`
+        let unique_id = `${this.vehicle.vin}-${name}`
         unique_id = unique_id.replace(/\s+/g, '-').toLowerCase();
         return {
-            device_class,
-            name,
+            name,            
             device: {
                 identifiers: [this.vehicle.vin],
                 manufacturer: this.vehicle.make,
                 model: this.vehicle.year,
                 name: this.vehicle.toString()
             },
-            availability_topic: this.getAvailabilityTopic(),
-            payload_available: 'true',
-            payload_not_available: 'false',
-            state_topic: this.getStateTopic(diag),
-            value_template: `{{ value_json.${MQTT.convertName(diagEl.name)} }}`,
-            json_attributes_topic: _.isUndefined(attr) ? undefined : this.getStateTopic(diag),
-            json_attributes_template: attr,
+            // availability differs between diagnostics and non-diagnostics
             unique_id: unique_id
         };
+    }
+
+    // this is really only usable by diagnostics data... If that changes, note
+    // that there's a diagnostic specific availability topic in here...
+    mapBaseDiagConfigPayload(diag, diagEl, device_class, name, attr) {
+        name = name || MQTT.convertFriendlyName(diagEl.name);        
+        return _.extend(
+            {
+                device_class,
+                availability : [ 
+                    {
+                        payload_available : 'true',
+                        payload_not_available : 'false',
+                        topic : this.getAvailabilityTopic()
+                    },
+                    {
+                        payload_available : 'true',
+                        payload_not_available : 'false',
+                        topic : this.getDiagnosticAvailabilityTopic()
+                    }
+                ],
+                state_topic: this.getStateTopic(diag),
+                value_template: `{{ value_json.${MQTT.convertName(diagEl.name)} }}`,
+                json_attributes_topic: _.isUndefined(attr) ? undefined : this.getStateTopic(diag),
+                json_attributes_template: attr,
+            }, this.mapBaseConfigPayload(name));
+    }
+
+    mapEventConfigPayload(_name) {
+        return _.extend(
+            {
+                availability_topic: this.getAvailabilityTopic(),
+                payload_available: 'true',
+                payload_not_available: 'false',
+                retain: false,
+                state_topic: this.getEventStateTopic(_name),
+                event_types: [ "success", "failure" ]
+            }, this.mapBaseConfigPayload(_name));
+    }
+
+    mapButtonConfigPayload(_name) {
+        return _.extend(
+            {
+                availability_topic: this.getAvailabilityTopic(),
+                payload_available: 'true',
+                payload_not_available: 'false',
+                retain: false,
+                command_topic: this.getCommandTopic(), // this uses the generic command topic
+                payload_press: `{ "command": "${_name}" }`
+            }, this.mapBaseConfigPayload(_name));
+    }
+
+    mapDeviceTrackerConfigPayload(_name) {
+
+        let retVal = _.extend(
+            {
+                availability_topic: this.getAvailabilityTopic(),
+                payload_available: 'true',
+                payload_not_available: 'false',
+                json_attributes_topic: this.getStateTopic({name: _name}),
+            }, this.mapBaseConfigPayload(_name));
+
+        // _name is going to be a command name, and not very user friendly for a tracker...
+        //   so, for this one device, clean things up a bit by re-writing the name
+        retVal.name = this.addNamePrefix("Vehicle Location");
+        return retVal;
     }
 
     mapSensorConfigPayload(diag, diagEl, device_class, name, attr) {
         name = name || MQTT.convertFriendlyName(diagEl.name);
         return _.extend(
-            this.mapBaseConfigPayload(diag, diagEl, device_class, name, attr),
+            this.mapBaseDiagConfigPayload(diag, diagEl, device_class, name, attr),
             {unit_of_measurement: diagEl.unit});
     }
 
     mapBinarySensorConfigPayload(diag, diagEl, device_class, name, attr) {
         name = name || MQTT.convertFriendlyName(diagEl.name);
         return _.extend(
-            this.mapBaseConfigPayload(diag, diagEl, device_class, name, attr),
+            this.mapBaseDiagConfigPayload(diag, diagEl, device_class, name, attr),
             {payload_on: true, payload_off: false});
     }
 
@@ -198,6 +274,11 @@ class MQTT {
      */
     getConfigMapping(diag, diagEl) {
         // TODO: this sucks, find a better way to map these diagnostics and their elements for discovery.
+        // this is a hack.. a really ugly hack
+        if (diag.name === "getLocation") {
+            return this.mapDeviceTrackerConfigPayload(diag.name);
+        }
+
         switch (diagEl.name) {
             case 'LIFETIME ENERGY USED':
             case 'LIFETIME EFFICIENCY':
