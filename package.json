@@ -37,15 +37,15 @@
     "winston": "^3.13.0"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.24.1",
-    "@babel/eslint-plugin": "^7.22.5",
+    "@babel/eslint-parser": "^7.24.7",
+    "@babel/eslint-plugin": "^7.24.7",
     "@babel/plugin-syntax-class-properties": "^7.12.13",
-    "@babel/preset-env": "^7.24.3",
-    "eslint": "^8.51.0",
+    "@babel/preset-env": "^7.24.7",
+    "eslint": "^9.5.0",
     "eslint-plugin-import": "^2.28.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0"
+    "eslint-plugin-promise": "^6.2.0",
+    "mocha": "^10.4.0",
+    "nyc": "^17.0.0"
   }
 }
