@@ -173,7 +173,13 @@ const configureMQTT = async (commands, client, mqttHA) => {
         };
 
         const main = async () => run()
-            .then(() => logger.info('Updates complete, sleeping.'))
+	    .then(() => {
+                if (onstarConfig.refreshInterval >= 0)
+                        logger.info('Updates complete, sleeping.');
+                else
+			logger.info('Updates complete, exiting.');
+                        return process.exit();
+            })
             .catch(e => {
                 if (e instanceof Error) {
                     logger.error('Error', {error: _.pick(e, [
