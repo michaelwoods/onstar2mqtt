@@ -33,8 +33,8 @@
     "convert-units": "^2.3.4",
     "lodash": "^4.17.21",
     "onstarjs": "^2.5.3",
-    "uuid": "^10.0.0",
-    "winston": "^3.13.0"
+    "uuid": "^11.0.3",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.1",
