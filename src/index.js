@@ -9,7 +9,50 @@ const MQTT = require('./mqtt');
 const Commands = require('./commands');
 const logger = require('./logger');
 const fs = require('fs');
-//const CircularJSON = require('circular-json');
+
+// Detection monitoring functionality
+const DetectionMonitor = {
+    logAuthAttempt: (success, duration, error = null) => {
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+            timestamp,
+            success,
+            duration,
+            ...(error && { error: error.message }),
+            ...(error?.response?.status && { statusCode: error.response.status })
+        };
+        
+        try {
+            const logPath = './data/authentication.log';
+            const logDir = require('path').dirname(logPath);
+            if (!fs.existsSync(logDir)) {
+                fs.mkdirSync(logDir, { recursive: true });
+            }
+            fs.appendFileSync(logPath, JSON.stringify(logEntry) + '\n');
+            
+            if (success) {
+                logger.info(`Authentication successful in ${(duration/1000).toFixed(1)}s`);
+            } else {
+                logger.warn(`Authentication failed after ${(duration/1000).toFixed(1)}s:`, error?.message);
+            }
+        } catch (e) {
+            logger.error('Failed to log authentication attempt:', e.message);
+        }
+    },
+    
+    isDetected: (error) => {
+        if (!error) return false;
+        const message = error.message?.toLowerCase() || '';
+        const status = error.response?.status;
+        
+        return status === 403 || status === 429 || 
+               message.includes('blocked') || 
+               message.includes('captcha') ||
+               message.includes('bot detected') ||
+               message.includes('akamai');
+    }
+};
+
 let buttonConfigsPublished = '';
 let refreshIntervalConfigPublished = '';
 
@@ -25,7 +68,15 @@ const onstarConfig = {
     refreshInterval: parseInt(process.env.ONSTAR_REFRESH) || (30 * 60 * 1000), // 30 min
     requestPollingIntervalSeconds: parseInt(process.env.ONSTAR_POLL_INTERVAL) || 6, // 6 sec default
     requestPollingTimeoutSeconds: parseInt(process.env.ONSTAR_POLL_TIMEOUT) || 90, // 60 sec default
-    allowCommands: _.get(process.env, 'ONSTAR_ALLOW_COMMANDS', 'true') === 'true'
+    allowCommands: _.get(process.env, 'ONSTAR_ALLOW_COMMANDS', 'true') === 'true',
+    
+    // Anti-detection configuration
+    useEnhancedAuth: _.get(process.env, 'ONSTAR_USE_ENHANCED_AUTH', 'true') === 'true',
+    stealthMode: _.get(process.env, 'ONSTAR_STEALTH_MODE', 'true') === 'true',
+    userAgentRotation: _.get(process.env, 'ONSTAR_USER_AGENT_ROTATION', 'true') === 'true',
+    humanDelays: _.get(process.env, 'ONSTAR_HUMAN_DELAYS', 'true') === 'true',
+    maxRetryAttempts: parseInt(process.env.ONSTAR_MAX_RETRY_ATTEMPTS) || 3,
+    retryBackoffMs: parseInt(process.env.ONSTAR_RETRY_BACKOFF_MS) || 5000
 };
 
 const onstarRequiredProperties = {
@@ -92,7 +143,43 @@ if (process.env.LOG_LEVEL === 'debug') {
     logger.info('MQTT Config:', { mqttConfig: { ...mqttConfig, password: '********', ca: undefined, cert: undefined, key: undefined } });
 }
 
-const init = () => new Commands(OnStar.create(onstarConfig));
+const init = () => {
+    // Enhanced OnStar client with anti-detection features
+    if (onstarConfig.useEnhancedAuth) {
+        logger.info('Using enhanced OnStar client with anti-detection features');
+        
+        // Create enhanced config with anti-detection options
+        const enhancedConfig = {
+            ...onstarConfig,
+            // Browser options for stealth mode
+            browserOptions: {
+                stealth: onstarConfig.stealthMode,
+                userAgentRotation: onstarConfig.userAgentRotation,
+                humanBehavior: onstarConfig.humanDelays,
+                // Add proxy config if provided
+                ...(process.env.ONSTAR_PROXY_SERVER && {
+                    proxy: {
+                        server: process.env.ONSTAR_PROXY_SERVER,
+                        username: process.env.ONSTAR_PROXY_USERNAME,
+                        password: process.env.ONSTAR_PROXY_PASSWORD
+                    }
+                })
+            }
+        };
+        
+        logger.debug('Enhanced config:', { 
+            stealth: enhancedConfig.browserOptions.stealth,
+            userAgentRotation: enhancedConfig.browserOptions.userAgentRotation,
+            humanBehavior: enhancedConfig.browserOptions.humanBehavior,
+            maxRetryAttempts: enhancedConfig.maxRetryAttempts
+        });
+        
+        return new Commands(OnStar.create(enhancedConfig));
+    } else {
+        logger.info('Using standard OnStar client');
+        return new Commands(OnStar.create(onstarConfig));
+    }
+};
 
 const getVehicles = async commands => {
     logger.info('Requesting vehicles');
@@ -107,13 +194,50 @@ const getVehicles = async commands => {
 }
 
 const getCurrentVehicle = async commands => {
-    const vehicles = await getVehicles(commands);
-    const currentVeh = _.find(vehicles, v => v.vin.toLowerCase() === onstarConfig.vin.toLowerCase());
-    if (!currentVeh) {
-        throw new Error(`Configured vehicle VIN ${onstarConfig.vin} not available in account vehicles`);
+    let lastError = null;
+    const startTime = Date.now();
+    
+    for (let attempt = 1; attempt <= onstarConfig.maxRetryAttempts; attempt++) {
+        try {
+            logger.info(`Getting vehicle information (attempt ${attempt}/${onstarConfig.maxRetryAttempts})`);
+            const vehicles = await getVehicles(commands);
+            const currentVeh = _.find(vehicles, v => v.vin.toLowerCase() === onstarConfig.vin.toLowerCase());
+            
+            if (!currentVeh) {
+                throw new Error(`Configured vehicle VIN ${onstarConfig.vin} not available in account vehicles`);
+            }
+            
+            // Success - log it
+            DetectionMonitor.logAuthAttempt(true, Date.now() - startTime);
+            return currentVeh;
+            
+        } catch (error) {
+            lastError = error;
+            logger.warn(`Vehicle request attempt ${attempt} failed:`, error.message);
+            
+            // Check if this looks like bot detection
+            if (DetectionMonitor.isDetected(error)) {
+                if (attempt < onstarConfig.maxRetryAttempts) {
+                    const delay = onstarConfig.retryBackoffMs * Math.pow(2, attempt - 1);
+                    const jitter = Math.random() * 1000;
+                    const totalDelay = delay + jitter;
+                    
+                    logger.warn(`Bot detection suspected, waiting ${(totalDelay/1000).toFixed(1)}s before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, totalDelay));
+                } else {
+                    logger.error('Max retry attempts reached with suspected bot detection');
+                }
+            } else {
+                // Non-detection error, don't retry
+                break;
+            }
+        }
     }
-    return currentVeh;
-}
+    
+    // Log the failure
+    DetectionMonitor.logAuthAttempt(false, Date.now() - startTime, lastError);
+    throw lastError || new Error('Authentication failed after all retry attempts');
+};
 
 const connectMQTT = async availabilityTopic => {
     const url = `${mqttConfig.tls ? 'mqtts' : 'mqtt'}://${mqttConfig.host}:${mqttConfig.port}`;
@@ -763,7 +887,6 @@ logger.info('!-- Starting OnStar2MQTT Polling --!');
                     };
                     //const errorJson = JSON.stringify(errorPayload);
                     const completionTimestamp = new Date().toISOString();
-                    logger.debug(`Completion Timestamp: ${completionTimestamp}`);
                     client.publish(pollingStatusTopicState,
                         JSON.stringify({
                             ...errorPayload,
