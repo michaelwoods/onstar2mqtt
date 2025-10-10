@@ -1,10 +1,11 @@
 const assert = require('assert');
 const _ = require('lodash');
 
-const { Diagnostic } = require('../src/diagnostic');
+const { Diagnostic, AdvancedDiagnostic } = require('../src/diagnostic');
 const MQTT = require('../src/mqtt');
 const Vehicle = require('../src/vehicle');
 const apiResponse = require('./diagnostic.sample.json');
+const apiV3Response = require('./diagnostic-sample-anonymized-v3-1.json');
 
 describe('MQTT', () => {
     let mqtt;
@@ -2883,3 +2884,136 @@ describe('MQTT', () => {
         });
     });
 });
+    describe('Advanced Diagnostics', () => {
+        let advDiag;
+        let mqtt;
+        let vehicle;
+
+        beforeEach(() => {
+            vehicle = new Vehicle({ make: 'Test', model: 'Car', vin: 'TEST123', year: 2024 });
+            mqtt = new MQTT(vehicle);
+            const advDiagnosticsResponse = _.get(apiV3Response, 'response.data.advDiagnostics');
+            advDiag = new AdvancedDiagnostic(advDiagnosticsResponse);
+        });
+
+        describe('getAdvancedDiagnosticConfig', () => {
+            it('should generate config for advanced diagnostic system', () => {
+                const system = advDiag.diagnosticSystems[0]; // Engine and Transmission
+                const config = mqtt.getAdvancedDiagnosticConfig(system, advDiag.cts);
+                
+                assert.ok(config.topic);
+                assert.ok(config.payload);
+                assert.strictEqual(config.payload.unique_id, 'TEST123-engine_and_transmission_system');
+                assert.strictEqual(config.payload.name, 'Engine and Transmission System');
+                assert.strictEqual(config.payload.icon, 'mdi:engine');
+                assert.strictEqual(config.payload.state_topic, 'homeassistant/TEST123/adv_diag/state');
+            });
+
+            it('should set correct icons for each system type', () => {
+                const expectedIcons = {
+                    'ENGINE_AND_TRANSMISSION_SYSTEM': 'mdi:engine',
+                    'ANTILOCK_BRAKING_SYSTEM': 'mdi:car-brake-abs',
+                    'STABILITRAK_STABILITY_CONTROL_SYSTEM': 'mdi:car-esp',
+                    'AIRBAG_SYSTEM': 'mdi:airbag',
+                    'EMISSIONS_SYSTEM': 'mdi:smoke',
+                    'ONSTAR_SYSTEM': 'mdi:car-connected',
+                    'ELECTRIC_LAMP_SYSTEM': 'mdi:lightbulb-group'
+                };
+
+                advDiag.diagnosticSystems.forEach(system => {
+                    const config = mqtt.getAdvancedDiagnosticConfig(system, advDiag.cts);
+                    assert.strictEqual(config.payload.icon, expectedIcons[system.systemLabel]);
+                });
+            });
+
+            it('should include system description in attributes', () => {
+                const system = advDiag.diagnosticSystems[0];
+                const config = mqtt.getAdvancedDiagnosticConfig(system, advDiag.cts);
+                
+                assert.ok(config.attributes.description);
+                assert.ok(config.attributes.description.length > 0);
+            });
+
+            it('should include individual subsystem attributes', () => {
+                const system = advDiag.diagnosticSystems[0]; // Engine system has 11 subsystems
+                const config = mqtt.getAdvancedDiagnosticConfig(system, advDiag.cts);
+                
+                // Check for displacement on demand subsystem
+                assert.ok(config.attributes.displacement_on_demand_subsystem);
+                assert.strictEqual(config.attributes.displacement_on_demand_subsystem.status, 'NO ACTION REQUIRED');
+                assert.strictEqual(config.attributes.displacement_on_demand_subsystem.status_color, 'GREEN');
+                assert.ok(config.attributes.displacement_on_demand_subsystem.description);
+            });
+
+            it('should use default icon for unknown system type', () => {
+                const unknownSystem = {
+                    systemId: '99',
+                    systemName: 'Unknown System',
+                    systemLabel: 'UNKNOWN_SYSTEM',
+                    systemStatus: 'NO_ACTION_REQUIRED',
+                    systemStatusColor: 'GREEN',
+                    subsystems: []
+                };
+                
+                const config = mqtt.getAdvancedDiagnosticConfig(unknownSystem, advDiag.cts);
+                assert.strictEqual(config.payload.icon, 'mdi:car-info');
+            });
+        });
+
+        describe('getAdvancedDiagnosticStatePayload', () => {
+            it('should generate state payload for all systems', () => {
+                const statePayload = mqtt.getAdvancedDiagnosticStatePayload(advDiag);
+                
+                assert.ok(statePayload.engine_and_transmission_system);
+                assert.ok(statePayload.engine_and_transmission_system_attr);
+                assert.strictEqual(statePayload.engine_and_transmission_system, 'NO_ACTION_REQUIRED');
+            });
+
+            it('should include standard attributes in state payload', () => {
+                const statePayload = mqtt.getAdvancedDiagnosticStatePayload(advDiag);
+                const engineAttr = statePayload.engine_and_transmission_system_attr;
+                
+                assert.strictEqual(engineAttr.status_color, 'GREEN');
+                assert.strictEqual(engineAttr.last_updated, advDiag.cts);
+                assert.strictEqual(engineAttr.dtc_count, 0);
+                assert.ok(engineAttr.description);
+            });
+
+            it('should include all subsystems as individual attributes', () => {
+                const statePayload = mqtt.getAdvancedDiagnosticStatePayload(advDiag);
+                const engineAttr = statePayload.engine_and_transmission_system_attr;
+                
+                // Engine system should have 11 subsystems as individual attributes
+                assert.ok(engineAttr.displacement_on_demand_subsystem);
+                assert.ok(engineAttr.fuel_management_subsystem);
+                assert.ok(engineAttr.transmission_subsystem);
+                
+                // Each subsystem should have required fields
+                const dodSub = engineAttr.displacement_on_demand_subsystem;
+                assert.ok(dodSub.name);
+                assert.ok(dodSub.status);
+                assert.ok(dodSub.status_color);
+                assert.strictEqual(typeof dodSub.dtc_count, 'number');
+            });
+
+            it('should generate state for all 7 diagnostic systems', () => {
+                const statePayload = mqtt.getAdvancedDiagnosticStatePayload(advDiag);
+                
+                const systemKeys = Object.keys(statePayload).filter(k => !k.endsWith('_attr'));
+                assert.strictEqual(systemKeys.length, 7);
+                
+                assert.ok(statePayload.engine_and_transmission_system);
+                assert.ok(statePayload.antilock_braking_system);
+                assert.ok(statePayload.airbag_system);
+                assert.ok(statePayload.emissions_system);
+                assert.ok(statePayload.onstar_system);
+            });
+
+            it('should not include subsystems_with_issues when no issues', () => {
+                const statePayload = mqtt.getAdvancedDiagnosticStatePayload(advDiag);
+                const engineAttr = statePayload.engine_and_transmission_system_attr;
+                
+                assert.strictEqual(engineAttr.subsystems_with_issues, undefined);
+            });
+        });
+    });

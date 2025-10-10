@@ -854,7 +854,7 @@ class MQTT {
         }
         
         // Keep subsystems_with_issues for backward compatibility and quick issue detection
-        if (system.subsystemsWithIssues.length > 0) {
+        if (system.subsystemsWithIssues && system.subsystemsWithIssues.length > 0) {
             attributes.subsystems_with_issues = system.subsystemsWithIssues.map(s => ({
                 name: s.subSystemName,
                 status: s.subSystemStatus,
@@ -863,7 +863,7 @@ class MQTT {
         }
         
         // Add DTC details if any
-        if (system.dtcs.length > 0) {
+        if (system.dtcs && system.dtcs.length > 0) {
             attributes.dtcs = system.dtcs;
         }
         
