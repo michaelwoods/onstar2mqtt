@@ -137,8 +137,18 @@ class DiagnosticSystem {
         this.systemStatus = systemResponse.systemStatus;
         this.systemStatusColor = systemResponse.systemStatusColor;
         
-        // Analyze subsystems for issues and DTC counts
+        // Store all subsystems with their full info
         const subSystems = systemResponse.subSystems || [];
+        this.subsystems = _.map(subSystems, s => ({
+            name: s.subSystemName,
+            label: s.subSystemLabel,
+            description: s.subSystemDescription,
+            status: s.subSystemStatus,
+            status_color: s.subSystemStatusColor,
+            dtc_count: (s.dtcList || []).length
+        }));
+        
+        // Keep track of subsystems with issues for backward compatibility
         this.subsystemsWithIssues = _.filter(subSystems, 
             s => s.subSystemStatus !== 'NO_ACTION_REQUIRED' && s.subSystemStatus !== 'NO ACTION REQUIRED');
         

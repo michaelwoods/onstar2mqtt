@@ -836,7 +836,24 @@ class MQTT {
             attributes.description = system.systemDescription;
         }
         
-        // Add subsystem issues if any
+        // Add each subsystem as individual attributes for easy access in HA
+        if (system.subsystems && system.subsystems.length > 0) {
+            system.subsystems.forEach(subsystem => {
+                const subsystemKey = MQTT.convertName(subsystem.label || subsystem.name);
+                attributes[subsystemKey] = {
+                    name: subsystem.name,
+                    status: subsystem.status,
+                    status_color: subsystem.status_color,
+                    dtc_count: subsystem.dtc_count
+                };
+                // Add description if available
+                if (subsystem.description) {
+                    attributes[subsystemKey].description = subsystem.description;
+                }
+            });
+        }
+        
+        // Keep subsystems_with_issues for backward compatibility and quick issue detection
         if (system.subsystemsWithIssues.length > 0) {
             attributes.subsystems_with_issues = system.subsystemsWithIssues.map(s => ({
                 name: s.subSystemName,
@@ -896,7 +913,24 @@ class MQTT {
                 state[`${baseName}_attr`].description = system.systemDescription;
             }
             
-            // Add subsystem issues if any
+            // Add each subsystem as individual attributes for easy access in HA
+            if (system.subsystems && system.subsystems.length > 0) {
+                system.subsystems.forEach(subsystem => {
+                    const subsystemKey = MQTT.convertName(subsystem.label || subsystem.name);
+                    state[`${baseName}_attr`][subsystemKey] = {
+                        name: subsystem.name,
+                        status: subsystem.status,
+                        status_color: subsystem.status_color,
+                        dtc_count: subsystem.dtc_count
+                    };
+                    // Add description if available
+                    if (subsystem.description) {
+                        state[`${baseName}_attr`][subsystemKey].description = subsystem.description;
+                    }
+                });
+            }
+            
+            // Keep subsystems_with_issues for backward compatibility and quick issue detection
             if (system.subsystemsWithIssues.length > 0) {
                 state[`${baseName}_attr`].subsystems_with_issues = system.subsystemsWithIssues.map(s => ({
                     name: s.subSystemName,
