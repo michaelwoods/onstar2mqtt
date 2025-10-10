@@ -789,6 +789,122 @@ class MQTT {
     }
 
     /**
+     * Return MQTT configuration for advanced diagnostic system sensors
+     * @param {DiagnosticSystem} system
+     * @param {string} overallCts - Overall advanced diagnostics timestamp
+     */
+    getAdvancedDiagnosticConfig(system, overallCts) {
+        const baseName = MQTT.convertName(system.systemLabel);
+        const sensorType = 'sensor';
+        const topic = `${this.getBaseTopic(sensorType)}/${baseName}/config`;
+        
+        // Determine icon based on system type
+        let icon = 'mdi:car-info';
+        switch (system.systemLabel) {
+            case 'ENGINE_AND_TRANSMISSION_SYSTEM':
+                icon = 'mdi:engine';
+                break;
+            case 'ANTILOCK_BRAKING_SYSTEM':
+                icon = 'mdi:car-brake-abs';
+                break;
+            case 'STABILITRAK_STABILITY_CONTROL_SYSTEM':
+                icon = 'mdi:car-esp';
+                break;
+            case 'AIRBAG_SYSTEM':
+                icon = 'mdi:airbag';
+                break;
+            case 'EMISSIONS_SYSTEM':
+                icon = 'mdi:smoke';
+                break;
+            case 'ONSTAR_SYSTEM':
+                icon = 'mdi:car-connected';
+                break;
+            case 'ELECTRIC_LAMP_SYSTEM':
+                icon = 'mdi:lightbulb-group';
+                break;
+        }
+        
+        // Build attributes object with subsystem and DTC details
+        const attributes = {
+            status_color: system.systemStatusColor,
+            last_updated: overallCts,
+            dtc_count: system.dtcCount,
+        };
+        
+        // Add subsystem issues if any
+        if (system.subsystemsWithIssues.length > 0) {
+            attributes.subsystems_with_issues = system.subsystemsWithIssues.map(s => ({
+                name: s.subSystemName,
+                status: s.subSystemStatus,
+                status_color: s.subSystemStatusColor
+            }));
+        }
+        
+        // Add DTC details if any
+        if (system.dtcs.length > 0) {
+            attributes.dtcs = system.dtcs;
+        }
+        
+        const payload = {
+            unique_id: `${this.vehicle.vin}-${baseName}`,
+            name: this.addNamePrefix(system.systemName),
+            state_topic: `homeassistant/${this.vehicle.vin}/adv_diag/state`,
+            value_template: `{{ value_json.${baseName} }}`,
+            json_attributes_topic: `homeassistant/${this.vehicle.vin}/adv_diag/state`,
+            json_attributes_template: `{{ value_json.${baseName}_attr | tojson }}`,
+            icon: icon,
+            availability_topic: this.getAvailabilityTopic(),
+            payload_available: 'true',
+            payload_not_available: 'false',
+            device: {
+                identifiers: [this.vehicle.vin],
+                manufacturer: this.vehicle.make,
+                model: this.vehicle.year + ' ' + this.vehicle.model,
+                name: this.vehicle.toString(),
+                suggested_area: this.vehicle.toString() + ' Sensors',
+            }
+        };
+        
+        return { topic, payload, attributes };
+    }
+
+    /**
+     * Return state payload for advanced diagnostics
+     * @param {AdvancedDiagnostic} advDiag
+     */
+    getAdvancedDiagnosticStatePayload(advDiag) {
+        const state = {};
+        
+        _.forEach(advDiag.diagnosticSystems, system => {
+            const baseName = MQTT.convertName(system.systemLabel);
+            state[baseName] = system.systemStatus;
+            
+            // Store attributes separately for cleaner template rendering
+            state[`${baseName}_attr`] = {
+                status_color: system.systemStatusColor,
+                last_updated: advDiag.cts,
+                dtc_count: system.dtcCount,
+            };
+            
+            // Add subsystem issues if any
+            if (system.subsystemsWithIssues.length > 0) {
+                state[`${baseName}_attr`].subsystems_with_issues = system.subsystemsWithIssues.map(s => ({
+                    name: s.subSystemName,
+                    status: s.subSystemStatus,
+                    status_color: s.subSystemStatusColor
+                }));
+            }
+            
+            // Add DTC details if any
+            if (system.dtcs.length > 0) {
+                state[`${baseName}_attr`].dtcs = system.dtcs;
+            }
+        });
+        
+        return state;
+    }
+
+    /**
      * Return the state payload for this diagnostic
      * @param {Diagnostic} diag
      */

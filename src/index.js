@@ -3,7 +3,7 @@ const mqtt = require('async-mqtt');
 const uuidv4 = require('uuid').v4;
 const _ = require('lodash');
 const Vehicle = require('./vehicle');
-const { Diagnostic } = require('./diagnostic');
+const { Diagnostic, AdvancedDiagnostic } = require('./diagnostic');
 const MQTT = require('./mqtt');
 const Commands = require('./commands');
 const logger = require('./logger');
@@ -701,6 +701,14 @@ logger.info('!-- Starting OnStar2MQTT Polling --!');
             );
             logger.debug('Diagnostic request response:', { stats: _.map(stats, s => s.toString()) });
 
+            // API CHANGE: Process advanced diagnostics from API v3
+            let advancedDiagnostic = null;
+            const advDiagnosticsResponse = _.get(statsRes, 'response.data.advDiagnostics');
+            if (advDiagnosticsResponse && advDiagnosticsResponse.diagnosticSystems) {
+                advancedDiagnostic = new AdvancedDiagnostic(advDiagnosticsResponse);
+                logger.debug('Advanced diagnostic response:', { advDiag: advancedDiagnostic.toString() });
+            }
+
             for (const s of stats) {
                 if (!s.hasElements()) {
                     continue;
@@ -722,6 +730,19 @@ logger.info('!-- Starting OnStar2MQTT Polling --!');
                 const payload = mqttHA.getStatePayload(s);
                 states.set(topic, payload);
             }
+            
+            // API CHANGE: Configure and publish advanced diagnostics sensors (API v3)
+            if (advancedDiagnostic && advancedDiagnostic.hasSystems()) {
+                for (const system of advancedDiagnostic.diagnosticSystems) {
+                    const { topic, payload } = mqttHA.getAdvancedDiagnosticConfig(system, advancedDiagnostic.cts);
+                    configurations.set(topic, { configured: false, payload });
+                }
+                
+                const advStateTopic = `homeassistant/${v.vin}/adv_diag/state`;
+                const advStatePayload = mqttHA.getAdvancedDiagnosticStatePayload(advancedDiagnostic);
+                states.set(advStateTopic, advStatePayload);
+            }
+            
             const publishes = [];
             // publish sensor configs
             for (let [topic, config] of configurations) {

@@ -107,4 +107,60 @@ class DiagnosticElement {
     }
 }
 
-module.exports = { Diagnostic, DiagnosticElement };
+class AdvancedDiagnostic {
+    constructor(advDiagResponse) {
+        this.advDiagnosticsStatus = advDiagResponse.advDiagnosticsStatus;
+        this.advDiagnosticsStatusColor = advDiagResponse.advDiagnosticsStatusColor;
+        this.recommendedAction = advDiagResponse.recommendedAction;
+        this.cts = advDiagResponse.cts;
+        this.diagnosticSystems = _.map(advDiagResponse.diagnosticSystems || [], 
+            s => new DiagnosticSystem(s));
+    }
+
+    hasSystems() {
+        return this.diagnosticSystems.length >= 1;
+    }
+
+    toString() {
+        let systems = '';
+        _.forEach(this.diagnosticSystems, s => systems += `  ${s.toString()}\n`)
+        return `Advanced Diagnostics (${this.advDiagnosticsStatus}):\n` + systems;
+    }
+}
+
+class DiagnosticSystem {
+    constructor(systemResponse) {
+        this.systemId = systemResponse.systemId;
+        this.systemName = systemResponse.systemName;
+        this.systemLabel = systemResponse.systemLabel;
+        this.systemDescription = systemResponse.systemDescription;
+        this.systemStatus = systemResponse.systemStatus;
+        this.systemStatusColor = systemResponse.systemStatusColor;
+        
+        // Analyze subsystems for issues and DTC counts
+        const subSystems = systemResponse.subSystems || [];
+        this.subsystemsWithIssues = _.filter(subSystems, 
+            s => s.subSystemStatus !== 'NO_ACTION_REQUIRED' && s.subSystemStatus !== 'NO ACTION REQUIRED');
+        
+        // Count total DTCs across all subsystems
+        this.dtcCount = _.sumBy(subSystems, s => (s.dtcList || []).length);
+        
+        // Store all DTCs for detailed info
+        this.dtcs = _.flatMap(subSystems, s => 
+            _.map(s.dtcList || [], dtc => ({
+                subsystem: s.subSystemName,
+                ...dtc
+            }))
+        );
+    }
+
+    toString() {
+        let issues = this.subsystemsWithIssues.length > 0 
+            ? ` (${this.subsystemsWithIssues.length} subsystem issues)` 
+            : '';
+        let dtcs = this.dtcCount > 0 ? ` [${this.dtcCount} DTCs]` : '';
+        return `${this.systemName}: ${this.systemStatus}${issues}${dtcs}`;
+    }
+}
+
+module.exports = { Diagnostic, DiagnosticElement, AdvancedDiagnostic, DiagnosticSystem };
