@@ -824,7 +824,7 @@ class MQTT {
                 break;
         }
         
-        // Build attributes object with subsystem and DTC details
+        // Build attributes object - start with top-level system information
         const attributes = {
             status_color: system.systemStatusColor,
             last_updated: overallCts,
@@ -834,23 +834,6 @@ class MQTT {
         // Add system description if available
         if (system.systemDescription) {
             attributes.description = system.systemDescription;
-        }
-        
-        // Add each subsystem as individual attributes for easy access in HA
-        if (system.subsystems && system.subsystems.length > 0) {
-            system.subsystems.forEach(subsystem => {
-                const subsystemKey = MQTT.convertName(subsystem.label || subsystem.name);
-                attributes[subsystemKey] = {
-                    name: subsystem.name,
-                    status: subsystem.status,
-                    status_color: subsystem.status_color,
-                    dtc_count: subsystem.dtc_count
-                };
-                // Add description if available
-                if (subsystem.description) {
-                    attributes[subsystemKey].description = subsystem.description;
-                }
-            });
         }
         
         // Keep subsystems_with_issues for backward compatibility and quick issue detection
@@ -865,6 +848,24 @@ class MQTT {
         // Add DTC details if any
         if (system.dtcs && system.dtcs.length > 0) {
             attributes.dtcs = system.dtcs;
+        }
+        
+        // Add each subsystem as individual attributes for easy access in HA
+        // These are added last so top-level system info appears first
+        if (system.subsystems && system.subsystems.length > 0) {
+            system.subsystems.forEach(subsystem => {
+                const subsystemKey = MQTT.convertName(subsystem.label || subsystem.name);
+                attributes[subsystemKey] = {
+                    name: subsystem.name,
+                    status: subsystem.status,
+                    status_color: subsystem.status_color,
+                    dtc_count: subsystem.dtc_count
+                };
+                // Add description if available
+                if (subsystem.description) {
+                    attributes[subsystemKey].description = subsystem.description;
+                }
+            });
         }
         
         const payload = {
