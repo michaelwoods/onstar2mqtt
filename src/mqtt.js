@@ -831,6 +831,11 @@ class MQTT {
             dtc_count: system.dtcCount,
         };
         
+        // Add system description if available
+        if (system.systemDescription) {
+            attributes.description = system.systemDescription;
+        }
+        
         // Add subsystem issues if any
         if (system.subsystemsWithIssues.length > 0) {
             attributes.subsystems_with_issues = system.subsystemsWithIssues.map(s => ({
@@ -885,6 +890,11 @@ class MQTT {
                 last_updated: advDiag.cts,
                 dtc_count: system.dtcCount,
             };
+            
+            // Add system description if available
+            if (system.systemDescription) {
+                state[`${baseName}_attr`].description = system.systemDescription;
+            }
             
             // Add subsystem issues if any
             if (system.subsystemsWithIssues.length > 0) {
